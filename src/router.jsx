@@ -12,7 +12,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import ScrollToTop from "./components/common/ScrollToTop";
 import Search from "./components/products/Search";
-import About from "./pages/about";
+import About from "./pages/About";
 import Contact from "./pages/contact";
 import Profile from "./pages/profile";
 import Wishlist from "./components/products/Wishlist";
