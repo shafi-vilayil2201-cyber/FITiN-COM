@@ -76,7 +76,7 @@ export default function Profile() {
           setUser(fresh);
           try {
             localStorage.setItem("currentUser", JSON.stringify(fresh));
-          } catch {}
+          } catch { }
           return;
         }
       }
@@ -95,11 +95,11 @@ export default function Profile() {
                   found.orders = ordersArr;
                 }
               }
-            } catch {}
+            } catch { }
             setUser(found);
             try {
               localStorage.setItem("currentUser", JSON.stringify(found));
-            } catch {}
+            } catch { }
             return;
           }
         }
@@ -119,7 +119,7 @@ export default function Profile() {
               try {
                 const ordersRes = await fetch(`${API_BASE}/orders?userId=${encodeURIComponent(normalizeId(match.id))}`);
                 if (ordersRes.ok) orders = await ordersRes.json();
-              } catch {}
+              } catch { }
               if ((!orders || !orders.length) && Array.isArray(match.orders)) {
                 orders = match.orders.map((o) => ({ ...o, userId: normalizeId(match.id) }));
               }
@@ -127,7 +127,7 @@ export default function Profile() {
               setUser(merged);
               try {
                 localStorage.setItem("currentUser", JSON.stringify(merged));
-              } catch {}
+              } catch { }
             }
           }
         }
@@ -244,7 +244,7 @@ export default function Profile() {
             )}
           </div>
         </section>
-        
+
         <section className="bg-white rounded-xl p-4 shadow-sm border">
           <h3 className="font-semibold text-slate-800">Shipping summary</h3>
           <div className="mt-3">

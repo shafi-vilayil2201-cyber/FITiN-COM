@@ -13,7 +13,7 @@ import Checkout from "./pages/Checkout";
 import ScrollToTop from "./components/common/ScrollToTop";
 import Search from "./components/products/Search";
 import About from "./pages/About";
-import Contact from "./pages/contact";
+import Contact from "./pages/Contact";
 import Profile from "./pages/profile";
 import Wishlist from "./components/products/Wishlist";
 
