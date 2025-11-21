@@ -1,5 +1,6 @@
+// router.jsx
 import React from "react";
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createHashRouter, Navigate } from "react-router-dom";
 import App from "./App";
 import Home from "./pages/Home";
 import Products from "./pages/Products";
@@ -24,14 +25,13 @@ import Orders from "./admin/orders/orders";
 import ProductsAdmin from "./admin/products/products";
 import Users from "./admin/users/users";
 
-
 function AdminGuard({ children }) {
   const { isAdmin } = useAdminAuth();
-  if (isAdmin) return children || null;
+  if (isAdmin) return children ?? null;
   return <Navigate to="/login" replace />;
 }
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: "/",
     element: (
@@ -67,11 +67,11 @@ const router = createBrowserRouter([
           { path: "dashboard", element: <Dashboard /> },
           { path: "orders", element: <Orders /> },
           { path: "products", element: <ProductsAdmin /> },
-          {path:"users",element:<Users/>}
-        ],
-      },
-    ],
-  },
+          { path: "users", element: <Users /> }
+        ]
+      }
+    ]
+  }
 ]);
 
 export default router;

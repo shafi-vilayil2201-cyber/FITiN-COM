@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
+/* Environment-aware API base */
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+
 export default function ProductsAdmin() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +26,6 @@ export default function ProductsAdmin() {
     image: "",
     shortDescription: "",
     longDescription: "",
-
   };
   const [form, setForm] = useState(emptyForm);
 
@@ -33,7 +35,7 @@ export default function ProductsAdmin() {
     const loadProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:3000/products");
+        const response = await fetch(`${API_BASE}/products`);
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
         setItems(Array.isArray(data) ? data : []);
@@ -64,7 +66,7 @@ export default function ProductsAdmin() {
     setDeletingId(id);
 
     try {
-      const res = await fetch(`http://localhost:3000/products/${id}`, {
+      const res = await fetch(`${API_BASE}/products/${encodeURIComponent(id)}`, {
         method: "DELETE",
       });
 
@@ -72,7 +74,7 @@ export default function ProductsAdmin() {
         throw new Error(`Server responded ${res.status}`);
       }
 
-      setItems((prev) => prev.filter((p) => p.id !== id));
+      setItems((prev) => prev.filter((p) => String(p.id) !== String(id)));
       toast.success("Product deleted");
       closeModal();
     } catch (err) {
@@ -90,13 +92,12 @@ export default function ProductsAdmin() {
   };
 
   const openEditPanel = (product) => {
-
     setEditingProduct(product);
     setForm({
       name: product.name,
       brand: product.brand,
-      sport: product.sport ,
-      category: product.category ,
+      sport: product.sport,
+      category: product.category,
       price: product.price,
       discount: product.discount,
       stock: product.stock,
@@ -177,16 +178,15 @@ export default function ProductsAdmin() {
           longDescription: form.longDescription,
         };
 
-        const res = await fetch(`http://localhost:3000/products/${editingProduct.id}`, {
+        const res = await fetch(`${API_BASE}/products/${encodeURIComponent(editingProduct.id)}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(updated),
         });
         if (!res.ok) throw new Error(`Server responded ${res.status}`);
         const saved = await res.json();
-        setItems((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
+        setItems((prev) => prev.map((p) => (String(p.id) === String(saved.id) ? saved : p)));
         toast.success("Product updated");
-
       } else {
         const newProduct = {
           id: Date.now().toString(),
@@ -203,7 +203,7 @@ export default function ProductsAdmin() {
           longDescription: form.longDescription,
         };
 
-        const res = await fetch(`http://localhost:3000/products`, {
+        const res = await fetch(`${API_BASE}/products`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newProduct),

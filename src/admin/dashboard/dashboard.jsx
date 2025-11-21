@@ -27,6 +27,9 @@ ChartJS.register(
   TimeScale
 );
 
+/* Use environment variable for production; fallback to localhost in dev */
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+
 export default function Dashboard() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState(null);
@@ -41,15 +44,14 @@ export default function Dashboard() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [chartKey, setChartKey] = useState(0);
 
-
   async function loadAll() {
     setLoading(true);
     setError("");
 
     try {
       const [pRes, uRes] = await Promise.all([
-        fetch("http://localhost:3000/products"),
-        fetch("http://localhost:3000/users"),
+        fetch(`${API_BASE}/products`),
+        fetch(`${API_BASE}/users`),
       ]);
 
       if (!pRes.ok) throw new Error("Failed to fetch products");
@@ -60,7 +62,7 @@ export default function Dashboard() {
       setUsers(Array.isArray(uData) ? uData : []);
 
       try {
-        const oRes = await fetch("http://localhost:3000/orders");
+        const oRes = await fetch(`${API_BASE}/orders`);
         if (oRes.ok) {
           const oData = await oRes.json();
           setOrders(Array.isArray(oData) ? oData : []);
@@ -77,14 +79,15 @@ export default function Dashboard() {
       setError("Failed to load dashboard data.");
 
       try {
-        const pRes = await fetch("http://localhost:3000/products");
+        const pRes = await fetch(`${API_BASE}/products`);
         if (pRes.ok) {
           const pData = await pRes.json();
           setProducts(Array.isArray(pData) ? pData : []);
         }
       } catch {}
+
       try {
-        const uRes = await fetch("http://localhost:3000/users");
+        const uRes = await fetch(`${API_BASE}/users`);
         if (uRes.ok) {
           const uData = await uRes.json();
           setUsers(Array.isArray(uData) ? uData : []);
@@ -97,7 +100,6 @@ export default function Dashboard() {
     }
   }
 
-
   useEffect(() => {
     loadAllRef.current = loadAll;
   }, []);
@@ -107,6 +109,7 @@ export default function Dashboard() {
     if (mounted) loadAll();
     return () => (mounted = false);
   }, []);
+
   useEffect(() => {
     if (!Array.isArray(orders) || orders.length === 0) {
       setChartData(null);
@@ -161,15 +164,14 @@ export default function Dashboard() {
 
     const values = labels.map((l) => Math.round(revenueMap[l] || 0));
 
-
     const palette = [
-      "#065f46", 
-      "#059669", 
+      "#065f46",
+      "#059669",
       "#10b981",
       "#34d399",
       "#60a5fa",
-      "#f59e0b", 
-      "#f97316", 
+      "#f59e0b",
+      "#f97316",
     ];
     const pointBackgroundColor = values.map((_, idx) => palette[idx % palette.length]);
 
@@ -195,7 +197,6 @@ export default function Dashboard() {
     });
   }, [orders, rangeDays]);
 
- 
   useEffect(() => {
     if (!chartRef.current || !chartData) return;
 
@@ -313,8 +314,6 @@ export default function Dashboard() {
     []
   );
 
- 
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -354,14 +353,6 @@ export default function Dashboard() {
           >
             <FaSyncAlt className="mr-2" /> Refresh
           </button>
-
-          {/* <button
-            title="Animate"
-            onClick={handleAnimate}
-            className="inline-flex items-center px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-400 to-emerald-500 text-white text-sm font-medium shadow transform transition-all duration-150 hover:from-emerald-500 hover:to-emerald-600 hover:-translate-y-1 hover:shadow-md"
-          >
-            <FaPlay className="mr-2" /> Animate
-          </button> */}
 
           <button
             className="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-50 text-emerald-700 text-sm font-medium border border-emerald-100"
@@ -412,7 +403,6 @@ export default function Dashboard() {
 
             <div className="mt-4 w-full h-56 rounded-lg bg-linear-to-b from-emerald-50 to-white border border-emerald-100/30 flex items-center justify-center text-slate-400 transform transition-all duration-200 hover:shadow-md hover:scale-105">
               {chartData ? (
-                // key=chartKey forces remount when animation is triggered
                 <div className="w-full h-full" key={chartKey}>
                   <Line ref={chartRef} data={chartData} options={chartOptions} />
                 </div>

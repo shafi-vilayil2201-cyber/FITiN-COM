@@ -4,6 +4,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { CartContext } from "../../contexts/CartContext";
 import { toast } from "react-toastify";
 
+/* Environment-based backend URL */
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+
 const PaymentForm = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -24,16 +27,11 @@ const PaymentForm = () => {
   };
 
   const handlePlaceOrder = async () => {
-    if (
-      !formData.name ||
-      !formData.address ||
-      !formData.city ||
-      !formData.postalCode ||
-      !formData.phone
-    ) {
+    if (!formData.name || !formData.address || !formData.city || !formData.postalCode || !formData.phone) {
       toast.warning("Please fill all the fields!");
       return;
     }
+
     const stored = localStorage.getItem("user") || localStorage.getItem("currentUser");
     const loggedUser = stored ? JSON.parse(stored) : null;
 
@@ -43,13 +41,16 @@ const PaymentForm = () => {
     }
 
     try {
+      // Load full user data from backend (fallback to local stored user)
       let userData;
       try {
-        const resp = await axios.get(`http://localhost:3000/users/${loggedUser.id}`);
+        const resp = await axios.get(`${API_BASE}/users/${loggedUser.id}`);
         userData = resp.data;
       } catch (e) {
         userData = loggedUser;
       }
+
+      // Build items (either Buy Now or Cart)
       let items = [];
       if (productFromBuyNow) {
         items = [
@@ -82,19 +83,24 @@ const PaymentForm = () => {
         orderDate: new Date().toISOString(),
         status: "Pending",
       };
+
+      // Create order in /orders
       try {
-        await axios.post("http://localhost:3000/orders", newOrder);
+        await axios.post(`${API_BASE}/orders`, newOrder);
       } catch (err) {
         console.warn("Warning: could not POST to /orders:", err.message || err);
       }
+
+      // Update user's order history
       try {
         const updatedOrders = [...(userData.orders || []), newOrder];
-        await axios.patch(`http://localhost:3000/users/${loggedUser.id}`, {
+        await axios.patch(`${API_BASE}/users/${loggedUser.id}`, {
           orders: updatedOrders,
         });
       } catch (err) {
         console.warn("Warning: could not update user.orders:", err.message || err);
       }
+
       if (!productFromBuyNow && clearCart) clearCart();
 
       toast.success("Order placed successfully!");

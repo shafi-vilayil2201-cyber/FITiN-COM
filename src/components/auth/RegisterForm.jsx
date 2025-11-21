@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-// import loginvid from "../../assets/loginvid.mp4";
 import { useNavigate } from 'react-router-dom';
-
 import { toast } from "react-toastify";
+
+/* Environment-based backend URL */
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
 
 const SignUp = () => {
     const [name, setName] = useState('');
@@ -13,7 +14,7 @@ const SignUp = () => {
     const navigate = useNavigate();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const passRegex = /^.{6,}$/
+    const passRegex = /^.{6,}$/;
 
     const handleEmailChange = (e) => {
         setEmail(e.target.value);
@@ -22,7 +23,7 @@ const SignUp = () => {
 
     const handlePassChange = (e) => {
         setPass(e.target.value);
-        setPassError(passRegex.test(e.target.value) ? '' : 'Password must be 6+ characters with a number');
+        setPassError(passRegex.test(e.target.value) ? '' : 'Password must be 6+ characters');
     };
 
     const handleSubmit = async (e) => {
@@ -31,7 +32,7 @@ const SignUp = () => {
             const newUser = { name, email: eMail, password: pass };
 
             try {
-                const response = await fetch("http://localhost:3000/users", {
+                const response = await fetch(`${API_BASE}/users`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(newUser),
@@ -58,7 +59,6 @@ const SignUp = () => {
     return (
         <div className="mx-auto max-w-sm sm:max-w-md md:max-w-4xl lg:max-w-6xl mt-14 px-4">
             <div className="bg-emerald-300 rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
-
 
                 <div className="flex-1 h-64 md:h-auto bg-white p-6 flex flex-col justify-center items-center">
                     <h1 className="text-2xl font-bold mb-4">Sign Up</h1>
@@ -96,14 +96,16 @@ const SignUp = () => {
                         >
                             Sign Up
                         </button>
-
                     </form>
-
                 </div>
 
                 <div className="w-full md:w-1/2 hidden md:flex justify-center items-center overflow-hidden">
-                          <img src="/assets/Loginimg.png" alt="Login"  className="w-full h-full object-cover"/>
-                        </div>
+                    <img
+                        src="/assets/Loginimg.png"
+                        alt="Login"
+                        className="w-full h-full object-cover"
+                    />
+                </div>
             </div>
         </div>
     );

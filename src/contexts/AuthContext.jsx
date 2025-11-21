@@ -2,70 +2,94 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 export const AuthContext = createContext();
-export function useAuth() { return useContext(AuthContext); }
+export function useAuth() { 
+  return useContext(AuthContext); 
+}
+
+/* Environment‐aware API base URL */
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const raw = localStorage.getItem('currentUser');
       return raw ? JSON.parse(raw) : null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   });
 
+  /* Sync localStorage when user changes */
   useEffect(() => {
     if (user) localStorage.setItem('currentUser', JSON.stringify(user));
     else localStorage.removeItem('currentUser');
   }, [user]);
+
+  /* Validate persisted session */
   useEffect(() => {
     let mounted = true;
+
     const validate = async () => {
       try {
         const raw = localStorage.getItem('currentUser');
         if (!raw) return;
+
         const parsed = JSON.parse(raw);
-        if (!parsed || !parsed.id) return;
-        const tryFetch = async (url) => {
-          const res = await fetch(url);
-          if (!res.ok) return null;
-          return res.json();
+        if (!parsed?.id) return;
+
+        // helper: fetch a user/admin from backend
+        const tryFetch = async (endpoint) => {
+          try {
+            const res = await fetch(`${API_BASE}/${endpoint}/${encodeURIComponent(parsed.id)}`);
+            if (!res.ok) return null;
+            return await res.json();
+          } catch {
+            return null;
+          }
         };
 
-        let fresh = await tryFetch(`http://localhost:3000/users/${parsed.id}`);
-        if (!fresh) fresh = await tryFetch(`http://localhost:3000/admins/${parsed.id}`);
+        let fresh =
+          (await tryFetch("users")) ||
+          (await tryFetch("admins"));
 
+        // If user/admin not found → remove session
         if (!fresh) {
           if (mounted) {
             setUser(null);
-            toast.info('Session invalidated (user not found).');
+            toast.info("Session ended: user not found.");
           }
           return;
         }
+
+        // If user is blocked → logout
         if (fresh.isBlock) {
           if (mounted) {
             setUser(null);
-            try { localStorage.removeItem('currentUser'); } catch (e) {}
-            toast.error('Your account has been blocked — you have been signed out.');
+            try { localStorage.removeItem('currentUser'); } catch {}
+            toast.error("Your account has been blocked — you have been logged out.");
           }
           return;
         }
+
+        // Remove password before storing
         const refreshedSafe = { ...fresh };
         if (refreshedSafe.password) delete refreshedSafe.password;
+
         if (mounted) setUser(refreshedSafe);
+
       } catch (err) {
-        console.error('Error validating persisted session:', err);
+        console.error("Error validating session:", err);
       }
     };
 
     validate();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
   const login = (u) => setUser(u);
+
   const logout = () => {
-    try { localStorage.removeItem('currentUser'); } catch (e) {}
+    try { localStorage.removeItem('currentUser'); } catch {}
     setUser(null);
   };
 

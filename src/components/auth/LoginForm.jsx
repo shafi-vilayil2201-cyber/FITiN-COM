@@ -6,6 +6,9 @@ import { AuthContext } from '../../contexts/AuthContext';
 import { useAdminAuth } from '../../admin/context/AdminAuthContext';
 import { toast } from 'react-toastify';
 
+/* Environment-aware API base */
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+
 const LoginForm = () => {
   const [eMail, setEmail] = useState('');
   const [pass, setPass] = useState('');
@@ -26,9 +29,10 @@ const LoginForm = () => {
         if (parsed?.role === 'admin' || parsed?.isAdmin) navigate('/admin/dashboard');
         else navigate('/');
       } catch {
+        // ignore parse errors
       }
     }
-  }, []);
+  }, [navigate]);
 
   const emailRegex = /\S+@\S+\.\S+/;
   const passRegex = /^.{6,}$/;
@@ -56,7 +60,8 @@ const LoginForm = () => {
 
     setLoading(true);
     try {
-      const usersRes = await fetch('http://localhost:3000/users');
+      // Fetch users and check credentials
+      const usersRes = await fetch(`${API_BASE}/users`);
       if (!usersRes.ok) throw new Error('Network issue while fetching users');
       const users = await usersRes.json();
       const foundUser = users.find(u => u.email === eMail && u.password === pass);
@@ -68,7 +73,7 @@ const LoginForm = () => {
           return; 
         }
 
-        const userObj = { ...foundUser, role: foundUser.role || 'user' }
+        const userObj = { ...foundUser, role: foundUser.role || 'user' };
         localStorage.setItem('currentUser', JSON.stringify(userObj));
         if (appLogin) appLogin(userObj);
         if (userObj.role === 'admin' && adminContext?.login) {
@@ -81,7 +86,9 @@ const LoginForm = () => {
         }
         return;
       }
-      const adminsRes = await fetch('http://localhost:3000/admins');
+
+      // Check admins if normal user not found
+      const adminsRes = await fetch(`${API_BASE}/admins`);
       if (!adminsRes.ok) throw new Error('Network issue while fetching admins');
       const admins = await adminsRes.json();
       const foundAdmin = admins.find(a => a.email === eMail && a.password === pass);

@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 
 const PAGE_SIZE = 10;
 
+/* Environment-based backend URL */
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +23,7 @@ export default function Users() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:3000/users");
+      const res = await fetch(`${API_BASE}/users`);
       if (!res.ok) throw new Error("Failed to fetch users");
       const data = await res.json();
       setUsers(Array.isArray(data) ? data : []);
@@ -58,19 +61,27 @@ export default function Users() {
 
     setUpdatingId(user.id);
     try {
-      const res = await fetch(`http://localhost:3000/users/${user.id}`, {
+      const res = await fetch(`${API_BASE}/users/${encodeURIComponent(user.id)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isBlock: newBlock }),
       });
       if (!res.ok) throw new Error("Failed to update user");
       const updatedUser = await res.json();
+
       setUsers((prev) =>
-        prev.map((p) => (String(p.id) === String(updatedUser.id || user.id) ? { ...p, ...(updatedUser || { isBlock: newBlock }) } : p))
+        prev.map((p) =>
+          String(p.id) === String(updatedUser.id || user.id)
+            ? { ...p, ...(updatedUser || { isBlock: newBlock }) }
+            : p
+        )
       );
 
       if (selected && String(selected.id) === String(updatedUser.id || user.id)) {
-        setSelected((prevSelected) => ({ ...prevSelected, ...(updatedUser || { isBlock: newBlock }) }));
+        setSelected((prevSelected) => ({
+          ...prevSelected,
+          ...(updatedUser || { isBlock: newBlock }),
+        }));
       }
     } catch (err) {
       console.error(err);
@@ -105,7 +116,7 @@ export default function Users() {
           </div>
         </header>
 
-        <div className="bg-white rounded-2xl p-4 border border-emerald-100/20 bg-linear-to-b from-emerald-100 to-white group transform transition-all duration-200 shadow-xl">
+        <div className="bg-white rounded-2xl p-4 border border-emerald-100/20 bg-linear-to-b from-emerald-100 to-white group transition-all duration-200 shadow-xl">
           <div className="flex items-center gap-3 mb-4">
             <input
               value={search}
@@ -119,9 +130,7 @@ export default function Users() {
           </div>
 
           <div className="overflow-x-auto">
-            <table
-              className="min-w-full text-sm shadow-xl border-emerald-100/20 bg-linear-to-b from-emerald-100 to-white group transform transition-all"
-            >
+            <table className="min-w-full text-sm shadow-xl border-emerald-100/20 bg-linear-to-b from-emerald-100 to-white group">
               <thead className="bg-slate-50 ">
                 <tr>
                   <th className="px-4 py-3 text-left text-slate-600">#</th>
@@ -155,14 +164,14 @@ export default function Users() {
                   pageItems.map((u, idx) => (
                     <tr
                       key={u.id}
-                      className="odd:bg-white even:bg-slate-50 bg-white/60 rounded-lg p-3 border border-transparent transform transition-all duration-150 hover:bg-white/80 hover:shadow-md hover:-translate-y-1"
+                      className="odd:bg-white even:bg-slate-50 hover:bg-white/80 hover:shadow-md transition-all duration-150"
                       onClick={() => {
                         selectUser(u);
                         window.scrollTo({ top: 0, behavior: "smooth" });
                       }}
                     >
-                      <td className="px-4 py-3 align-top">{(page - 1) * PAGE_SIZE + idx + 1}</td>
-                      <td className="px-4 py-3 align-top">
+                      <td className="px-4 py-3">{(page - 1) * PAGE_SIZE + idx + 1}</td>
+                      <td className="px-4 py-3">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -175,15 +184,15 @@ export default function Users() {
                           {u.name || "—"}
                         </button>
                       </td>
-                      <td className="px-4 py-3 align-top">{u.role || "user"}</td>
-                      <td className="px-4 py-3 align-top">
+                      <td className="px-4 py-3">{u.role || "user"}</td>
+                      <td className="px-4 py-3">
                         {u.isBlock ? (
                           <span className="text-xs px-2 py-1 rounded-full bg-red-50 text-red-700">Blocked</span>
                         ) : (
                           <span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">Active</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 align-top text-right">
+                      <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
@@ -216,11 +225,12 @@ export default function Users() {
               </tbody>
             </table>
           </div>
+
           {filtered.length > PAGE_SIZE && (
             <div className="mt-4 flex items-center justify-between">
               <div className="text-sm text-slate-500">
-                Showing {(page - 1) * PAGE_SIZE + 1} -{" "}
-                {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+                Showing {(page - 1) * PAGE_SIZE + 1} - {Math.min(page * PAGE_SIZE, filtered.length)} of{" "}
+                {filtered.length}
               </div>
 
               <div className="flex items-center gap-2">
@@ -251,7 +261,7 @@ export default function Users() {
 
       <aside className="lg:col-span-4">
         <div className="sticky top-6 space-y-4">
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100/20 bg-linear-to-b from-emerald-200 to-emerald-100 group transform transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100/20 bg-linear-to-b from-emerald-200 to-emerald-100">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm text-slate-500">Selected User</div>
@@ -291,22 +301,27 @@ export default function Users() {
                 <div className="mt-4 text-sm">
                   <div className="font-medium text-slate-800 mb-2">Summary</div>
                   <div className="text-slate-500">
-                    Orders: <span className="font-semibold text-slate-700">{(selected.orders || []).length}</span>
+                    Orders:{" "}
+                    <span className="font-semibold text-slate-700">
+                      {(selected.orders || []).length}
+                    </span>
                   </div>
                   <div className="mt-2 text-slate-500">
-                    Cart items: <span className="font-semibold text-slate-700">{(selected.cart || []).length}</span>
+                    Cart items:{" "}
+                    <span className="font-semibold text-slate-700">
+                      {(selected.cart || []).length}
+                    </span>
                   </div>
                 </div>
               </>
             ) : (
               <>
-                <div className="mt-4 text-sm text-slate-500">Select a user from the list to view details, block/unblock or delete.</div>
+                <div className="mt-4 text-sm text-slate-500">
+                  Select a user from the list to view details, block/unblock or delete.
+                </div>
 
                 <button
-                  onClick={() => {
-        
-                    loadUsers();
-                  }}
+                  onClick={() => loadUsers()}
                   className="mt-4 w-full py-2 rounded-full bg-linear-to-r from-emerald-400 to-emerald-600 text-white text-sm font-medium shadow"
                   type="button"
                 >
@@ -316,10 +331,16 @@ export default function Users() {
             )}
           </div>
 
-          <div className="bg-white rounded-2xl p-4 shadow-sm border text-sm text-slate-500 border-emerald-100/20 bg-linear-to-b from-emerald-200 to-emerald-100 group transform transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+          <div className="bg-white rounded-2xl p-4 shadow-sm border text-sm text-slate-500 border-emerald-100/20 bg-linear-to-b from-emerald-200 to-emerald-100">
             <div className="font-medium text-slate-800">Quick Stats</div>
-            <div className="mt-2">Total users: <span className="font-semibold text-slate-700">{users.length}</span></div>
-            <div className="mt-1">Blocked: <span className="font-semibold">{users.filter(u => u.isBlock).length}</span></div>
+            <div className="mt-2">
+              Total users:{" "}
+              <span className="font-semibold text-slate-700">{users.length}</span>
+            </div>
+            <div className="mt-1">
+              Blocked:{" "}
+              <span className="font-semibold">{users.filter((u) => u.isBlock).length}</span>
+            </div>
           </div>
         </div>
       </aside>
