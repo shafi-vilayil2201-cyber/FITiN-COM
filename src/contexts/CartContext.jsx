@@ -5,37 +5,37 @@ import { toast } from "react-toastify";
 
 export const CartContext = createContext();
 
-/* Environment-based BASE URL */
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+import { API_BASE } from '../services/api';
 
 export const CartProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
   const [cart, setCart] = useState([]);
   const [wishList, setWishList] = useState([]);
 
-  /* -----------------------------------------------------------
-     Load cart from backend for logged-in user
-  ----------------------------------------------------------- */
+  // Load cart & wishlist from backend for logged-in user
   useEffect(() => {
-    const fetchUserCart = async () => {
-      if (!user || !user.id) return;
+    const fetchData = async () => {
+      if (!user || !user.id || user.role === 'admin') {
+        setCart([]);
+        setWishList([]);
+        return;
+      }
 
       try {
         const res = await axios.get(`${API_BASE}/users/${encodeURIComponent(user.id)}`);
         setCart(res.data.cart || []);
+        setWishList(res.data.wishlist || []);
       } catch (error) {
-        console.error("Error fetching user cart:", error);
+        console.error("Error fetching user data:", error);
       }
     };
 
-    fetchUserCart();
+    fetchData();
   }, [user]);
 
-  /* -----------------------------------------------------------
-     Helper: sync cart to backend
-  ----------------------------------------------------------- */
+  // Helper: sync cart to backend
   const syncCartToBackend = async (updatedCart) => {
-    if (!user || !user.id) return;
+    if (!user || !user.id || user.role === 'admin') return;
 
     try {
       await axios.patch(`${API_BASE}/users/${encodeURIComponent(user.id)}`, {
@@ -46,9 +46,20 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  /* -----------------------------------------------------------
-     Add to Cart
-  ----------------------------------------------------------- */
+  // Helper: sync wishlist to backend
+  const syncWishlistToBackend = async (updatedWishlist) => {
+    if (!user || !user.id || user.role === 'admin') return;
+
+    try {
+      await axios.patch(`${API_BASE}/users/${encodeURIComponent(user.id)}`, {
+        wishlist: updatedWishlist,
+      });
+    } catch (error) {
+      console.error("Error syncing wishlist:", error);
+    }
+  };
+
+  // Add to Cart
   const addToCart = (product) => {
     setCart((prevCart) => {
       const existing = prevCart.find((item) => item.id === product.id);
@@ -69,9 +80,7 @@ export const CartProvider = ({ children }) => {
     toast.success("Added to cart!");
   };
 
-  /* -----------------------------------------------------------
-     Remove Item
-  ----------------------------------------------------------- */
+  // Remove Item from Cart
   const removeFromCart = (id) => {
     setCart((prevCart) => {
       const updated = prevCart.filter((item) => item.id !== id);
@@ -80,9 +89,7 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  /* -----------------------------------------------------------
-     Increase Qty
-  ----------------------------------------------------------- */
+  // Increase Qty
   const increaseQty = (id) => {
     setCart((prevCart) => {
       const updated = prevCart.map((item) =>
@@ -94,9 +101,7 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  /* -----------------------------------------------------------
-     Decrease Qty
-  ----------------------------------------------------------- */
+  // Decrease Qty
   const decreaseQty = (id) => {
     setCart((prevCart) => {
       const updated = prevCart
@@ -114,17 +119,13 @@ export const CartProvider = ({ children }) => {
     toast.success("Quantity decreased");
   };
 
-  /* -----------------------------------------------------------
-     Clear Cart
-  ----------------------------------------------------------- */
+  // Clear Cart
   const clearCart = () => {
     setCart([]);
     syncCartToBackend([]);
   };
 
-  /* -----------------------------------------------------------
-     Proceed to Buy (update stock in backend)
-  ----------------------------------------------------------- */
+  // Proceed to Buy (update stock in backend)
   const proceedToBuy = async () => {
     try {
       for (let item of cart) {
@@ -143,16 +144,42 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  // Wishlist Operations
+  const addToWishlist = (product) => {
+    setWishList((prev) => {
+      if (prev.some((item) => item.id === product.id)) {
+        toast.info("Already in wishlist");
+        return prev;
+      }
+      const updated = [...prev, product];
+      syncWishlistToBackend(updated);
+      toast.success("Added to wishlist");
+      return updated;
+    });
+  };
+
+  const removeFromWishlist = (productId) => {
+    setWishList((prev) => {
+      const updated = prev.filter((item) => item.id !== productId);
+      syncWishlistToBackend(updated);
+      toast.success("Removed from wishlist");
+      return updated;
+    });
+  };
+
   return (
     <CartContext.Provider
       value={{
         cart,
+        wishList,
         addToCart,
         removeFromCart,
         increaseQty,
         decreaseQty,
         proceedToBuy,
         clearCart,
+        addToWishlist,
+        removeFromWishlist,
       }}
     >
       {children}

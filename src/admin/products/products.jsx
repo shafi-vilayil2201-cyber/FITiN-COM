@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 /* Environment-aware API base */
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+import { API_BASE } from '../../services/api';
 
 export default function ProductsAdmin() {
   const [items, setItems] = useState([]);

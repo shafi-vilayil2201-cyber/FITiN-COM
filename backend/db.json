@@ -751,7 +751,7 @@
             "phone": "123456789"
           },
           "orderDate": "2025-11-19T06:29:10.670Z",
-          "status": "Delivered"
+          "status": "Pending"
         },
         {
           "id": 1763633778369,
@@ -773,7 +773,7 @@
             "phone": "1123456789"
           },
           "orderDate": "2025-11-20T10:16:18.369Z",
-          "status": "Delivered"
+          "status": "Pending"
         },
         {
           "id": 1763634175170,
@@ -801,7 +801,7 @@
             "phone": "1123456789"
           },
           "orderDate": "2025-11-20T10:22:55.170Z",
-          "status": "Shipped"
+          "status": "Pending"
         }
       ],
       "isBlock": false
@@ -906,106 +906,38 @@
         {
           "id": "3",
           "name": "Cricket Bat English Willow",
-          "brand": "SG",
-          "sport": "Cricket",
-          "category": "Bats",
           "price": 5499,
-          "discount": 15,
-          "stock": 12,
-          "rating": 4.6,
           "image": "https://m.media-amazon.com/images/I/61CedfN8u+L.jpg",
-          "shortDescription": "Professional-grade English willow bat with superior balance.",
-          "longDescription": "Designed for powerful shots with a thick edge profile and perfect balance. Suitable for both leather and tennis ball play.",
-          "specs": {
-            "weight": "1.2kg",
-            "size": "Full Size",
-            "material": "English Willow"
-          },
-          "tags": [
-            "cricket",
-            "bat",
-            "men",
-            "outdoor"
-          ],
+          "category": "Bats",
+          "quantity": 1
+        },
+        {
+          "id": "12",
+          "name": "Yoga Strap 6ft Cotton",
+          "price": 499,
+          "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtzbOy7YWfclrBaxHKp9xYdzLzM2OYn7CYQA&s",
+          "category": "Accessories",
           "quantity": 1
         }
       ],
       "wishlist": [
+        {
+          "id": "3",
+          "name": "Cricket Bat English Willow",
+          "price": 5499,
+          "image": "https://m.media-amazon.com/images/I/61CedfN8u+L.jpg",
+          "category": "Bats"
+        },
         {
           "id": "12",
           "name": "Yoga Strap 6ft Cotton",
           "price": 499,
           "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtzbOy7YWfclrBaxHKp9xYdzLzM2OYn7CYQA&s",
           "category": "Accessories"
-        },
-        {
-          "id": "1763458029517",
-          "name": "WHOOP 4.0 ",
-          "price": 30000,
-          "image": "https://m.media-amazon.com/images/I/61Fe+1-71-L.jpg",
-          "category": "Tracker"
-        },
-        {
-          "id": "5",
-          "name": "Adjustable Dumbbell Set 20kg",
-          "price": 4999,
-          "image": "https://contents.mediadecathlon.com/p2297776/62dc0610d1672ffacd9da67f18a6a52a/p2297776.jpg",
-          "category": "Weights"
         }
       ],
       "isBlock": false,
-      "orders": [
-        {
-          "id": 1763893196865,
-          "userId": "e132",
-          "items": [
-            {
-              "productId": "3",
-              "name": "Cricket Bat English Willow",
-              "price": 5499,
-              "quantity": 2
-            },
-            {
-              "productId": "12",
-              "name": "Yoga Strap 6ft Cotton",
-              "price": 499,
-              "quantity": 1
-            }
-          ],
-          "totalAmount": 11497,
-          "shippingDetails": {
-            "name": "salman new",
-            "address": "mlp",
-            "city": "mlp",
-            "postalCode": "676552",
-            "phone": "1123456789"
-          },
-          "orderDate": "2025-11-23T10:19:56.865Z",
-          "status": "Shipped"
-        },
-        {
-          "id": "1763894108607",
-          "userId": "e132",
-          "items": [
-            {
-              "productId": "3",
-              "name": "Cricket Bat English Willow",
-              "price": 5499,
-              "quantity": 1
-            }
-          ],
-          "totalAmount": 5499,
-          "shippingDetails": {
-            "name": "salam last",
-            "address": "mplm",
-            "city": "kerala",
-            "postalCode": "676552",
-            "phone": "1123456789"
-          },
-          "orderDate": "2025-11-23T10:35:08.607Z",
-          "status": "Processing"
-        }
-      ]
+      "orders": []
     },
     {
       "id": "11ab",
@@ -1191,7 +1123,7 @@
         "phone": "123456789"
       },
       "orderDate": "2025-11-17T11:33:11.432Z",
-      "status": "Delivered"
+      "status": "Cancelled"
     },
     {
       "id": "1763533750670",
@@ -1219,7 +1151,7 @@
         "phone": "123456789"
       },
       "orderDate": "2025-11-19T06:29:10.670Z",
-      "status": "Delivered"
+      "status": "Shipped"
     },
     {
       "id": "1763557330457",
@@ -1244,7 +1176,7 @@
       "status": "Delivered"
     },
     {
-      "id": "1763632534371",
+      "id": 1763632534371,
       "userId": "1",
       "items": [
         {
@@ -1266,7 +1198,7 @@
       "status": "Pending"
     },
     {
-      "id": "1763633778369",
+      "id": 1763633778369,
       "userId": "e5d5",
       "items": [
         {
@@ -1285,10 +1217,10 @@
         "phone": "1123456789"
       },
       "orderDate": "2025-11-20T10:16:18.369Z",
-      "status": "Delivered"
+      "status": "Pending"
     },
     {
-      "id": "1763634175170",
+      "id": 1763634175170,
       "userId": "e5d5",
       "items": [
         {
@@ -1313,57 +1245,7 @@
         "phone": "1123456789"
       },
       "orderDate": "2025-11-20T10:22:55.170Z",
-      "status": "Shipped"
-    },
-    {
-      "id": "1763893196865",
-      "userId": "e132",
-      "items": [
-        {
-          "productId": "3",
-          "name": "Cricket Bat English Willow",
-          "price": 5499,
-          "quantity": 2
-        },
-        {
-          "productId": "12",
-          "name": "Yoga Strap 6ft Cotton",
-          "price": 499,
-          "quantity": 1
-        }
-      ],
-      "totalAmount": 11497,
-      "shippingDetails": {
-        "name": "salman new",
-        "address": "mlp",
-        "city": "mlp",
-        "postalCode": "676552",
-        "phone": "1123456789"
-      },
-      "orderDate": "2025-11-23T10:19:56.865Z",
-      "status": "Shipped"
-    },
-    {
-      "id": "1763894108607",
-      "userId": "e132",
-      "items": [
-        {
-          "productId": "3",
-          "name": "Cricket Bat English Willow",
-          "price": 5499,
-          "quantity": 1
-        }
-      ],
-      "totalAmount": 5499,
-      "shippingDetails": {
-        "name": "salam last",
-        "address": "mplm",
-        "city": "kerala",
-        "postalCode": "676552",
-        "phone": "1123456789"
-      },
-      "orderDate": "2025-11-23T10:35:08.607Z",
-      "status": "Processing"
+      "status": "Pending"
     }
   ],
   "categories": [

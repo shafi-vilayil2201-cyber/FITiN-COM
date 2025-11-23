@@ -25,7 +25,7 @@ export const WishlistProvider = ({ children, localWishlist = [] }) => {
   };
 
   const refreshWishlist = async () => {
-    if (!userId) {
+    if (!userId || user.role === 'admin') {
       setWishlist([]);
       return;
     }
@@ -45,7 +45,7 @@ export const WishlistProvider = ({ children, localWishlist = [] }) => {
   }, [userId]);
 
   const addToWishlist = async (product) => {
-    if (!userId) {
+    if (!userId || user.role === 'admin') {
       toast.info("Please log in to add items to your wishlist!");
       return;
     }
@@ -81,7 +81,7 @@ export const WishlistProvider = ({ children, localWishlist = [] }) => {
     } catch (err) {
       console.error("Failed to remove wishlist item:", err);
       toast.error("Failed to remove item");
-      await refreshWishlist(); 
+      await refreshWishlist();
     }
   };
 

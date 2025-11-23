@@ -1,11 +1,15 @@
 import React, { useState, useContext, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaShoppingCart, FaHeart, FaUser, FaSearch, FaBars, FaTimes } from "react-icons/fa";
-import { AuthContext } from "../../contexts/AuthContext"; 
+import { AuthContext } from "../../contexts/AuthContext";
+import { CartContext } from "../../contexts/CartContext";
+import { WishlistContext } from "../../contexts/wishListContext";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, logout } = useContext(AuthContext);
+  const { cart } = useContext(CartContext);
+  const { wishList } = useContext(WishlistContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
@@ -42,13 +46,13 @@ const Navbar = () => {
           role="navigation"
           aria-label="Main Navigation"
         >
-    
+
           <Link to="/" className="flex flex-row items-center" onClick={() => setMenuOpen(false)}>
             <h1 className="text-2xl font-bold text-green-600">FIT</h1>
             <h1 className="text-2xl font-bold text-blue-600">iN</h1>
           </Link>
 
-       
+
           <ul className="hidden md:flex space-x-6 text-gray-700 font-medium">
             <li><Link to="/">Home</Link></li>
             <li><Link to="/products">Products</Link></li>
@@ -57,19 +61,31 @@ const Navbar = () => {
             <li><Link to="/contact">Contact</Link></li>
           </ul>
 
- 
+
           <div className="hidden md:flex items-center space-x-4 text-gray-700">
             <Link to='/Search'><button aria-label="Search" className="cursor-pointer focus:outline-none"><FaSearch /></button></Link>
-            <Link to='/cart'><button aria-label="Cart" className="cursor-pointer focus:outline-none"><FaShoppingCart /></button></Link>
-            <Link to='/wishlist'>
+            <Link to='/cart' className="relative">
+              <button aria-label="Cart" className="cursor-pointer focus:outline-none"><FaShoppingCart /></button>
+              {cart?.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                  {cart.length}
+                </span>
+              )}
+            </Link>
+            <Link to='/wishlist' className="relative">
               <button aria-label="Wishlist" className="cursor-pointer focus:outline-none">
                 <FaHeart />
               </button>
+              {wishList?.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                  {wishList.length}
+                </span>
+              )}
             </Link>
 
             {user ? (
               <div className="flex items-center space-x-3">
-               
+
                 <span className="font-semibold">{user?.name ?? "User"}</span>
                 <Link to="/Profile" aria-label="Profile"><FaUser className="cursor-pointer" /></Link>
                 <button
@@ -86,7 +102,7 @@ const Navbar = () => {
             )}
           </div>
 
-     
+
           <button
             className="md:hidden text-gray-700 focus:outline-none"
             onClick={toggleMenu}
@@ -98,7 +114,7 @@ const Navbar = () => {
           </button>
         </nav>
 
-        
+
         {menuOpen && (
           <div id="mobile-menu" className="md:hidden bg-gray-100">
             <ul className="flex flex-col items-center py-4 space-y-4 text-gray-700 font-medium">

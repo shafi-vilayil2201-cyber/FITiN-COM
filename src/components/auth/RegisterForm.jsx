@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "react-toastify";
 
-/* Environment-based backend URL */
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+import { API_BASE } from '../../services/api';
+import LoginImg from '../../assets/Loginimg.png';
 
 const SignUp = () => {
     const [name, setName] = useState('');
@@ -101,7 +101,7 @@ const SignUp = () => {
 
                 <div className="w-full md:w-1/2 hidden md:flex justify-center items-center overflow-hidden">
                     <img
-                        src="/assets/Loginimg.png"
+                        src={LoginImg}
                         alt="Login"
                         className="w-full h-full object-cover"
                     />

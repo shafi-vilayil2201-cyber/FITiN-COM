@@ -5,7 +5,7 @@ import { CartContext } from "../../contexts/CartContext";
 import { toast } from "react-toastify";
 
 /* Environment-based backend URL */
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+import { API_BASE } from '../../services/api';
 
 const PaymentForm = () => {
   const [formData, setFormData] = useState({
@@ -75,7 +75,7 @@ const PaymentForm = () => {
       }
 
       const newOrder = {
-        id: Date.now(),
+        id: String(Date.now()),
         userId: String(loggedUser.id),
         items,
         totalAmount: items.reduce((sum, it) => sum + (it.price || 0) * (it.quantity || 1), 0),

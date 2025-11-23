@@ -6,8 +6,8 @@ import { AuthContext } from '../../contexts/AuthContext';
 import { useAdminAuth } from '../../admin/context/AdminAuthContext';
 import { toast } from 'react-toastify';
 
-/* Environment-aware API base */
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+import { API_BASE } from '../../services/api';
+import LoginImg2 from '../../assets/Loginimg2.png';
 
 const LoginForm = () => {
   const [eMail, setEmail] = useState('');
@@ -17,15 +17,15 @@ const LoginForm = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { login: appLogin } = useContext(AuthContext); 
-  const adminContext = useAdminAuth(); 
+  const { login: appLogin } = useContext(AuthContext);
+  const adminContext = useAdminAuth();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
       try {
         const parsed = JSON.parse(storedUser);
-  
+
         if (parsed?.role === 'admin' || parsed?.isAdmin) navigate('/admin/dashboard');
         else navigate('/');
       } catch {
@@ -70,7 +70,7 @@ const LoginForm = () => {
         if (foundUser.isBlock) {
           toast.error('Your account has been blocked. Contact the administrator.');
           setLoading(false);
-          return; 
+          return;
         }
 
         const userObj = { ...foundUser, role: foundUser.role || 'user' };
@@ -122,7 +122,7 @@ const LoginForm = () => {
     <div className="mx-auto max-w-sm sm:max-w-md md:max-w-4xl lg:max-w-6xl mt-14 px-4">
       <div className="bg-emerald-300 rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
         <div className="w-full md:w-1/2 hidden md:flex justify-center items-center overflow-hidden">
-         <img  src="/assets/Loginimg2.png" alt="Login" className="w-full h-full object-cover" />
+          <img src={LoginImg2} alt="Login" className="w-full h-full object-cover" />
         </div>
 
         <div className="flex-1 h-64 md:h-auto bg-white p-6 flex flex-col justify-center items-center">

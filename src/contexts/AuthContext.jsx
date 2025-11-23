@@ -2,12 +2,11 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 export const AuthContext = createContext();
-export function useAuth() { 
-  return useContext(AuthContext); 
+export function useAuth() {
+  return useContext(AuthContext);
 }
 
-/* Environment‐aware API base URL */
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+import { API_BASE } from '../services/api';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -65,7 +64,7 @@ export function AuthProvider({ children }) {
         if (fresh.isBlock) {
           if (mounted) {
             setUser(null);
-            try { localStorage.removeItem('currentUser'); } catch {}
+            try { localStorage.removeItem('currentUser'); } catch { }
             toast.error("Your account has been blocked — you have been logged out.");
           }
           return;
@@ -89,7 +88,7 @@ export function AuthProvider({ children }) {
   const login = (u) => setUser(u);
 
   const logout = () => {
-    try { localStorage.removeItem('currentUser'); } catch {}
+    try { localStorage.removeItem('currentUser'); } catch { }
     setUser(null);
   };
 

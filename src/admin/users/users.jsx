@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 const PAGE_SIZE = 10;
 
 /* Environment-based backend URL */
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+import { API_BASE } from '../../services/api';
 
 export default function Users() {
   const [users, setUsers] = useState([]);

@@ -28,7 +28,7 @@ ChartJS.register(
 );
 
 /* Use environment variable for production; fallback to localhost in dev */
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3000";
+import { API_BASE } from '../../services/api';
 
 export default function Dashboard() {
   const [products, setProducts] = useState([]);
@@ -84,7 +84,7 @@ export default function Dashboard() {
           const pData = await pRes.json();
           setProducts(Array.isArray(pData) ? pData : []);
         }
-      } catch {}
+      } catch { }
 
       try {
         const uRes = await fetch(`${API_BASE}/users`);
@@ -94,7 +94,7 @@ export default function Dashboard() {
           const derived = deriveOrdersFromUsers(uData || []);
           setOrders(derived);
         }
-      } catch {}
+      } catch { }
     } finally {
       setLoading(false);
     }
@@ -132,12 +132,12 @@ export default function Dashboard() {
       if (o.orderDate) {
         try {
           dateKey = new Date(o.orderDate).toISOString().slice(0, 10);
-        } catch {}
+        } catch { }
       }
       if (!dateKey && o.createdAt) {
         try {
           dateKey = new Date(o.createdAt).toISOString().slice(0, 10);
-        } catch {}
+        } catch { }
       }
       if (!dateKey) continue;
       if (!(dateKey in revenueMap)) continue;
@@ -370,9 +370,8 @@ export default function Dashboard() {
         {stats.map((s) => (
           <div
             key={s.id}
-            className={`rounded-xl p-4 shadow-inner border border-emerald-100/20 bg-linear-to-b from-emerald-200 to-white group transform transition-all duration-200 ${
-              isAnimating ? "animate-bounce" : "hover:-translate-y-1"
-            } hover:shadow-lg`}
+            className={`rounded-xl p-4 shadow-inner border border-emerald-100/20 bg-linear-to-b from-emerald-200 to-white group transform transition-all duration-200 ${isAnimating ? "animate-bounce" : "hover:-translate-y-1"
+              } hover:shadow-lg`}
           >
             <div className="flex items-center justify-between">
               <div className="text-sm text-slate-500">{s.label}</div>

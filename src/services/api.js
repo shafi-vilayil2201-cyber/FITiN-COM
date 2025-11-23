@@ -64,7 +64,7 @@ async function handleRequest(promise) {
   }
 }
 
-/* -------------- API helpers -------------- */
+// API helpers
 
 export const getAllProducts = async () => {
   return await handleRequest(api.get("/products"));
