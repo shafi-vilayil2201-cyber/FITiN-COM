@@ -35,6 +35,11 @@ app.get('/api/db', (req, res) => {
   });
 });
 
+// Root route
+app.get('/', (req, res) => {
+  res.send('Backend is running. Try /api or /api/db');
+});
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
