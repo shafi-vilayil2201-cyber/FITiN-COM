@@ -11,12 +11,16 @@ const api = axios.create({
   withCredentials: true,
 });
 
-async function handleRequest(promise) {
-  try {
+async function handleRequest(promise)
+{
+  try
+  {
     const res = await promise;
     return res?.data?.data ?? null;
-  } catch (err) {
-    if (err?.response) {
+  } catch (err)
+  {
+    if (err?.response)
+    {
       const message =
         err.response.data?.message ||
         err.response.data?.error ||
@@ -27,7 +31,8 @@ async function handleRequest(promise) {
       throw e;
     }
 
-    if (err?.request) {
+    if (err?.request)
+    {
       throw new Error("No response from server. Check backend or network.");
     }
 
@@ -37,21 +42,31 @@ async function handleRequest(promise) {
 
 export const getAllProducts = async () => handleRequest(api.get("/products"));
 
-export const getProductById = async (id) => {
-  if (id === undefined || id === null) {
+export const getProductById = async (id) =>
+{
+  if (id === undefined || id === null)
+  {
     throw new Error("getProductById: id is required");
   }
   return handleRequest(api.get(`/products/${encodeURIComponent(id)}`));
 };
 
+export const getWishlist = async () =>
+{
+  return [];
+};
+
+export const addToWishlistAPI = async () =>
+{
+  return null;
+};
+
+export const removeFromWishlistAPI = async () =>
+{
+  return null;
+};
+
 export default api;
-
-
-
-
-
-
-
 
 
 
