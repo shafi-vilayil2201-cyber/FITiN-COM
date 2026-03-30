@@ -16,7 +16,6 @@ const Categories = () => {
                 const uniqueCategories = Array.from(
                     new Map(data.map((item) => [item.category, item.image])).entries()
                 ).map(([name, image]) => ({ name, image }));
-
                 setCategories(uniqueCategories);
                 setProducts(data);
             } catch (error) {
