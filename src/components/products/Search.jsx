@@ -15,13 +15,16 @@ const Search = () => {
   const { addToWishlist, removeFromWishlist, wishList } = useContext(WishlistContext);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await getAllProducts(); 
+  useEffect(() =>
+  {
+    const fetchProducts = async () =>
+    {
+      try
+      {
+        const res = await getAllProducts();
         setProducts(res);
 
-        const uniqueCategories = [...new Set(res.map((p) => p.category).filter(Boolean))];
+        const uniqueCategories = [...new Set(res.map((p) => p.categoryName).filter(Boolean))];
         setCategories(uniqueCategories);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -29,19 +32,24 @@ const Search = () => {
         setLoading(false);
       }
     };
+
     fetchProducts();
   }, []);
 
   useEffect(() => {
     let result = [...products];
-    if (searchTerm) {
+    if (searchTerm)
+    {
       result = result.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
     }
-    if (category !== "all") {
-      result = result.filter((p) => p.category === category);
+    if (category !== "all")
+    {
+      result = result.filter((p) => p.categoryName === category);
     }
+
     if (sort === "low-high") result.sort((a, b) => a.price - b.price);
     else if (sort === "high-low") result.sort((a, b) => b.price - a.price);
+
     setFiltered(result);
   }, [searchTerm, category, sort, products]);
 
@@ -54,7 +62,7 @@ const Search = () => {
       <div className="flex flex-col md:flex-row gap-4 mb-8 justify-center bg-white shadow-md rounded-xl p-4">
         <input
           type="text"
-          placeholder="🔍 Search products..."
+          placeholder="Search products..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           autoFocus
@@ -69,7 +77,7 @@ const Search = () => {
           <option value="all">All Categories</option>
           {categories.map((cat) => (
             <option key={cat} value={cat}>
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              {cat}
             </option>
           ))}
         </select>
@@ -80,8 +88,8 @@ const Search = () => {
           className="border border-gray-300 px-4 py-2 rounded-md focus:ring-2 focus:ring-emerald-500"
         >
           <option value="none">Sort By</option>
-          <option value="low-high">Price: Low → High</option>
-          <option value="high-low">Price: High → Low</option>
+          <option value="low-high">Price: Low to High</option>
+          <option value="high-low">Price: High to Low</option>
         </select>
       </div>
 
@@ -127,14 +135,31 @@ const Search = () => {
 
                 <div className="p-5 flex flex-col grow justify-between">
                   <div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-1 line-clamp-1">{product.name}</h3>
+                    <h3 className="text-lg font-bold text-gray-800 mb-1 line-clamp-1">
+                      {product.name}
+                    </h3>
                     <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-                      {product.brand || "Popular product"} – {product.sport || "Sport"}
+                      {product.brand} {product.sport ? `- ${product.sport}` : ""}
                     </p>
+                    {product.shortDescription && (
+                      <p className="text-gray-500 text-sm mb-2 line-clamp-2">
+                        {product.shortDescription}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between mt-auto">
-                    <p className="text-lg font-semibold text-emerald-700">₹{product.price || "—"}</p>
+                    <div>
+                      <p className="text-lg font-semibold text-emerald-700">
+                        ₹{product.price}
+                      </p>
+                      {product.discount > 0 && (
+                        <p className="text-xs text-orange-600 font-medium">
+                          {product.discount}% off
+                        </p>
+                      )}
+                    </div>
+
                     <button
                       onClick={() => navigate(`/products/${product.id}`)}
                       className="px-5 py-2.5 bg-linear-to-r from-emerald-500 to-emerald-700 text-white text-sm font-semibold rounded-lg shadow hover:from-emerald-600 hover:to-emerald-800 transition-all duration-300 transform hover:scale-105"
