@@ -27,7 +27,7 @@ ChartJS.register(
   TimeScale
 );
 
-/* Use environment variable for production; fallback to localhost in dev */
+
 import { API_BASE } from '../../services/api';
 
 export default function Dashboard() {
