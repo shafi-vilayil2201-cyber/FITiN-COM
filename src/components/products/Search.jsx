@@ -15,12 +15,9 @@ const Search = () => {
   const { addToWishlist, removeFromWishlist, wishList } = useContext(WishlistContext);
   const navigate = useNavigate();
 
-  useEffect(() =>
-  {
-    const fetchProducts = async () =>
-    {
-      try
-      {
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
         const res = await getAllProducts();
         setProducts(res);
 
@@ -38,12 +35,10 @@ const Search = () => {
 
   useEffect(() => {
     let result = [...products];
-    if (searchTerm)
-    {
+    if (searchTerm) {
       result = result.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
     }
-    if (category !== "all")
-    {
+    if (category !== "all") {
       result = result.filter((p) => p.categoryName === category);
     }
 
@@ -109,7 +104,7 @@ const Search = () => {
               >
                 <div className="relative">
                   <img
-                    src={product.image}
+                    src={product.imageUrl}
                     alt={product.name}
                     className="w-full h-56 object-cover rounded-t-2xl"
                   />

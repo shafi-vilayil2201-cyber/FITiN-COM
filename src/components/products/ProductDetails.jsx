@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getAllProducts } from "../../services/api.js";
 import { CartContext } from "../../contexts/CartContext.jsx";
-import {WishlistContext} from '../../contexts/wishListContext.jsx'
+import { WishlistContext } from '../../contexts/wishListContext.jsx'
 import "../../../src/App.css";
 
 const ProductDetails = () => {
@@ -18,7 +18,7 @@ const ProductDetails = () => {
       setPending(true);
       try {
         const data = await getAllProducts();
-        const product = data.find((item) => String(item.id) ===id );
+        const product = data.find((item) => String(item.id) === id);
         setDetails(product);
       } catch (error) {
         console.error("Error fetching product details:", error);
@@ -51,10 +51,10 @@ const ProductDetails = () => {
   return (
     <div className="min-h-screen flex justify-center items-center p-6">
       <div className="bg-white rounded-2xl shadow-2xl flex flex-col md:flex-row w-full max-w-5xl overflow-hidden">
-       
+
         <div className="md:w-1/2 flex justify-center items-center bg-linear-to-r from-yellow-600 via-yellow-400 to-yellow-600 p-6 animate-shimmer">
           <img
-            src={details.image}
+            src={details.imageUrl}
             alt={details.name}
             className="rounded-xl w-full h-80 object-cover shadow-2xl transition-transform duration-1000
             ease-[cubic-bezier(.13,.8,.5,1.2)] 
@@ -109,23 +109,23 @@ const ProductDetails = () => {
 
           <div className="flex gap-4">
             <button
-                onClick={() => {
-                    console.log("Adding to cart:", details);
-                    addToCart(details); 
-                }}
-                className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition duration-300"
-                >
-                Add to Cart
-                </button>
-            <button
-            onClick={() => navigate("/checkout", { state: { product: details } })}
-            className="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700"
+              onClick={() => {
+                console.log("Adding to cart:", details);
+                addToCart(details);
+              }}
+              className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition duration-300"
             >
-            Buy now
+              Add to Cart
             </button>
             <button
-            onClick={()=>addToWishlist(details)}
-            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition duration-300">
+              onClick={() => navigate("/checkout", { state: { product: details } })}
+              className="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700"
+            >
+              Buy now
+            </button>
+            <button
+              onClick={() => addToWishlist(details)}
+              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition duration-300">
               Add to Wishlist
             </button>
           </div>
