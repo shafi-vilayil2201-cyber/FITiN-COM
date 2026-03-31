@@ -58,9 +58,9 @@ const router = createHashRouter([
       {
         path: "/admin",
         element: (
-          <AdminGuard>
-            <AdminLayout />
-          </AdminGuard>
+          // <AdminGuard>
+          <AdminLayout />
+          // </AdminGuard>
         ),
         children: [
           { index: true, element: <Navigate to="dashboard" replace /> },
