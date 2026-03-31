@@ -57,66 +57,37 @@ const LoginForm = () => {
       toast.warning('Please enter email and password');
       return;
     }
-
     setLoading(true);
     try {
       // Fetch users and check credentials
-      const usersRes = await fetch(`${API_BASE}/users`);
-      if (!usersRes.ok) throw new Error('Network issue while fetching users');
-      const users = await usersRes.json();
-      const foundUser = users.find(u => u.email === eMail && u.password === pass);
+      const response = await loginUser(eMail, pass);
+      if (response.success) {
+        const userObj = response.data;
 
-      if (foundUser) {
-        if (foundUser.isBlock) {
-          toast.error('Your account has been blocked. Contact the administrator.');
-          setLoading(false);
-          return;
-        }
-
-        const userObj = { ...foundUser, role: foundUser.role || 'user' };
         localStorage.setItem('currentUser', JSON.stringify(userObj));
         if (appLogin) appLogin(userObj);
-        if (userObj.role === 'admin' && adminContext?.login) {
+
+        if (adminContext?.login)
           adminContext.login(userObj);
-          toast.success('Admin login successful');
+
+        toast.success('Login successful!');
+
+        if (userObj.role === 'Admin' || userObj.role === 'admin') {
           navigate('/admin/dashboard');
         } else {
-          toast.success('Login successful!');
           navigate('/');
         }
-        return;
+      } else {
+        toast.error(response.message || "Invalid credentials");
       }
-
-      // Check admins if normal user not found
-      const adminsRes = await fetch(`${API_BASE}/admins`);
-      if (!adminsRes.ok) throw new Error('Network issue while fetching admins');
-      const admins = await adminsRes.json();
-      const foundAdmin = admins.find(a => a.email === eMail && a.password === pass);
-
-      if (foundAdmin) {
-        if (foundAdmin.isBlock) {
-          toast.error('This admin account has been blocked. Contact the super-admin.');
-          setLoading(false);
-          return;
-        }
-
-        const adminObj = { ...foundAdmin, role: foundAdmin.role || 'admin' };
-        localStorage.setItem('currentUser', JSON.stringify(adminObj));
-        if (adminContext?.login) adminContext.login(adminObj);
-        if (appLogin) appLogin(adminObj);
-        toast.success('Admin login successful');
-        navigate('/admin/dashboard');
-        return;
-      }
-
-      toast.error('Invalid email or password');
-    } catch (err) {
-      console.error('Error during login:', err);
-      toast.error('An error occurred during login');
+    } catch (error) {
+      console.error("login error:", error);
+      toast.error(error.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="mx-auto max-w-sm sm:max-w-md md:max-w-4xl lg:max-w-6xl mt-14 px-4">

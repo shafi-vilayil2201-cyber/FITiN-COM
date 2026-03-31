@@ -35,6 +35,29 @@ async function handleRequest(promise) {
   }
 }
 
+export const loginUser = async (email, password) => {
+  const formData = new FormData();
+  formData.append("Email", email);
+  formData.append("Password", password);
+
+  const res = await api.post("/auth/login", formData);
+  return res.data;
+};
+
+export const registerUser = async (name, email, password) => {
+  const formData = new FormData();
+  formData.append("Name", name);
+  formData.append("Email", email);
+  formData.append("Password", password);
+
+  const res = await api.post("/auth/register", formData);
+  return res.data;
+};
+
+export const getProfile = async () => {
+  return handleRequest(api.get("/auth/profile"));
+}
+
 export const getAllProducts = async () => handleRequest(api.get("/products"));
 
 export const getProductById = async (id) => {
@@ -55,6 +78,8 @@ export const addToWishlistAPI = async () => {
 export const removeFromWishlistAPI = async () => {
   return null;
 };
+
+
 
 export default api;
 

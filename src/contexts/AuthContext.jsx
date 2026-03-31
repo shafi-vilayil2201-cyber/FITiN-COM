@@ -6,7 +6,7 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
-import { API_BASE } from '../services/api';
+import { API_BASE, getProfile } from '../services/api';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
