@@ -4,7 +4,8 @@ import { getAllProducts } from "../../services/api";
 import { FaHeart } from "react-icons/fa";
 import { WishlistContext } from "../../contexts/wishListContext";
 
-const Search = () => {
+const Search = () =>
+{
   const [products, setProducts] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -15,17 +16,22 @@ const Search = () => {
   const { addToWishlist, removeFromWishlist, wishList } = useContext(WishlistContext);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
+  useEffect(() =>
+  {
+    const fetchProducts = async () =>
+    {
+      try
+      {
         const res = await getAllProducts();
         setProducts(res);
 
         const uniqueCategories = [...new Set(res.map((p) => p.categoryName).filter(Boolean))];
         setCategories(uniqueCategories);
-      } catch (error) {
+      } catch (error)
+      {
         console.error("Error fetching products:", error);
-      } finally {
+      } finally
+      {
         setLoading(false);
       }
     };
@@ -33,12 +39,15 @@ const Search = () => {
     fetchProducts();
   }, []);
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     let result = [...products];
-    if (searchTerm) {
+    if (searchTerm)
+    {
       result = result.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
     }
-    if (category !== "all") {
+    if (category !== "all")
+    {
       result = result.filter((p) => p.categoryName === category);
     }
 
