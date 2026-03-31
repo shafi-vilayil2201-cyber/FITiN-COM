@@ -13,41 +13,52 @@ export default function ProductsAdmin() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
 
   const emptyForm = {
     name: "",
     brand: "",
     sport: "",
-    category: "",
+    categoryId: "",
     price: "",
     discount: "",
     stock: "",
     rating: "",
-    image: "",
+    imageUrl: "",
     shortDescription: "",
     longDescription: "",
   };
   const [form, setForm] = useState(emptyForm);
 
   const [searchTerm, setSearchTerm] = useState("");
-
   useEffect(() => {
     const loadProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API_BASE}/products`);
-        if (!response.ok) throw new Error("Failed to fetch products");
-        const data = await response.json();
-        setItems(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Product fetch error:", err);
-        toast.error("Failed to load products");
+        const httpResponse = await fetch(`${API_BASE}/products`);
+        if (!httpResponse.ok) throw new Error("Failed to fetch products");
+
+        const result = await httpResponse.json();
+
+        setItems(Array.isArray(result.data) ? result.data : []);
+      } catch (error) {
+        console.error("Product fetch error:", error);
+        toast.error("Failed tp load products");
         setItems([]);
       } finally {
         setLoading(false);
       }
     };
     loadProducts();
+  }, []);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      const res = await fetch(`${API_BASE}/categories`);
+      const result = await res.json();
+      setCategories(result.data || []);
+    };
+    loadCategories();
   }, []);
 
   const confirmDelete = (product) => {
@@ -97,12 +108,12 @@ export default function ProductsAdmin() {
       name: product.name,
       brand: product.brand,
       sport: product.sport,
-      category: product.category,
+      categoryId: product.categoryId,
       price: product.price,
       discount: product.discount,
       stock: product.stock,
       rating: product.rating,
-      image: product.image,
+      imageUrl: product.imageUrl,
       shortDescription: product.shortDescription,
       longDescription: product.longDescription,
     });
@@ -136,7 +147,7 @@ export default function ProductsAdmin() {
     if (!file) return;
     try {
       const dataUrl = await fileToDataUrl(file);
-      setForm((f) => ({ ...f, image: dataUrl }));
+      setForm((f) => ({ ...f, imageUrl: dataUrl }));
       toast.info("Image loaded ");
     } catch (err) {
       console.error("File read error", err);
@@ -146,7 +157,7 @@ export default function ProductsAdmin() {
 
   const validateForm = () => {
     if (!form.name?.trim()) return "Name is required";
-    if (!form.category?.trim()) return "Category is required";
+    if (!form.categoryId?.trim()) return "Category is required";
     if (!form.price || Number.isNaN(Number(form.price))) return "Valid price is required";
     return null;
   };
@@ -158,66 +169,47 @@ export default function ProductsAdmin() {
       toast.error(errMsg);
       return;
     }
-
     setFormLoading(true);
-
     try {
-      if (editingProduct) {
-        const updated = {
-          ...editingProduct,
-          name: form.name,
-          brand: form.brand,
-          sport: form.sport,
-          category: form.category,
-          price: Number(form.price),
-          discount: form.discount ? Number(form.discount) : 0,
-          stock: form.stock ? Number(form.stock) : 0,
-          rating: form.rating ? Number(form.rating) : 0,
-          image: form.image,
-          shortDescription: form.shortDescription,
-          longDescription: form.longDescription,
-        };
+      const formData = new FormData();
+      formData.append("Name", form.name);
+      formData.append("Brand", form.brand);
+      formData.append("Sport", form.sport);
+      formData.append("CategoryId", form.categoryId);
+      formData.append("Price", form.price || 0);
+      formData.append("Stock", form.stock || 0);
+      formData.append("ImageUrl", form.imageUrl);
+      formData.append("Description", form.shortDescription);
+      formData.append("ShortDescription", form.shortDescription);
+      formData.append("LongDescription", form.longDescription);
+      formData.append("Discount", form.discount || 0);
+      formData.append("Rating", form.rating || 0);
 
-        const res = await fetch(`${API_BASE}/products/${encodeURIComponent(editingProduct.id)}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updated),
-        });
-        if (!res.ok) throw new Error(`Server responded ${res.status}`);
-        const saved = await res.json();
+
+      const url = editingProduct
+        ? `${API_BASE}/admin/products/${editingProduct.id}` : `${API_BASE}/admin/products`;
+
+      const method = editingProduct ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method: method,
+        body: formData,
+      });
+      if (!res.ok) throw new Error(`Server responded ${res.status}`);
+
+      const result = await res.json();
+      const saved = result.data;
+
+      if (editingProduct) {
         setItems((prev) => prev.map((p) => (String(p.id) === String(saved.id) ? saved : p)));
         toast.success("Product updated");
       } else {
-        const newProduct = {
-          id: Date.now().toString(),
-          name: form.name,
-          brand: form.brand,
-          sport: form.sport,
-          category: form.category,
-          price: Number(form.price),
-          discount: form.discount ? Number(form.discount) : 0,
-          stock: form.stock ? Number(form.stock) : 0,
-          rating: form.rating ? Number(form.rating) : 0,
-          image: form.image,
-          shortDescription: form.shortDescription,
-          longDescription: form.longDescription,
-        };
-
-        const res = await fetch(`${API_BASE}/products`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newProduct),
-        });
-        if (!res.ok) throw new Error(`Server responded ${res.status}`);
-        const saved = await res.json();
-
         setItems((prev) => [saved, ...prev]);
         toast.success("Product created");
       }
-
       closePanel();
-    } catch (err) {
-      console.error("Save product error:", err);
+    } catch (error) {
+      console.error("save product error:", error);
       toast.error("Failed to save product");
     } finally {
       setFormLoading(false);
@@ -287,9 +279,9 @@ export default function ProductsAdmin() {
                     className="flex flex-col md:flex-row gap-4 items-stretch b rounded-xl p-4 shadow-inner border border-emerald-100/20 bg-linear-to-b from-emerald-200 to-emerald-50 group transform transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
                   >
                     <div className="w-full md:w-56 h-44 shrink-0 rounded-lg overflow-hidden bg-slate-100">
-                      {product.image ? (
+                      {product.imageUrl ? (
                         <img
-                          src={product.image}
+                          src={product.imageUrl}
                           alt={product.name}
                           className="w-full h-full object-cover"
                         />
@@ -387,16 +379,30 @@ export default function ProductsAdmin() {
               <div>
                 <label className="block text-xs text-slate-600">Name</label>
                 <input name="name" value={form.name} onChange={onChange} className="w-full px-3 py-2 border rounded-md" />
-              </div>
 
+              </div>
+              <div>
+                <label className="block text-xs text-slate-600">Category</label>
+                <select
+                  name="categoryId"
+                  value={form.categoryId || ""}
+                  onChange={onChange}
+                  className="w-full px-3 py-2 border rounded-md"
+                >
+                  <option value="">Select Category</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs text-slate-600">Category</label>
-                  <input name="category" value={form.category} onChange={onChange} className="w-full px-3 py-2 border rounded-md" />
-                </div>
                 <div>
                   <label className="block text-xs text-slate-600">Brand</label>
                   <input name="brand" value={form.brand} onChange={onChange} className="w-full px-3 py-2 border rounded-md" />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-600">Sport</label>
+                  <input name="sport" value={form.sport} onChange={onChange} className="w-full px-3 py-2 border rounded-md" />
                 </div>
               </div>
 
@@ -418,14 +424,14 @@ export default function ProductsAdmin() {
 
               <div>
                 <label className="block text-xs text-slate-600">Image URL</label>
-                <input name="image" value={form.image} onChange={onChange} placeholder="https://..." className="w-full px-3 py-2 border rounded-md" />
+                <input name="imageUrl" value={form.imageUrl} onChange={onChange} placeholder="https://..." className="w-full px-3 py-2 border rounded-md" />
                 <div className="mt-2 text-xs text-slate-500">Or upload a file below; file will be stored as a data URL.</div>
                 <input type="file" accept="image/*" onChange={onFileChange} className="mt-2" />
-                {form.image && (
+                {form.imageUrl && (
                   <div className="mt-3">
                     <div className="text-xs text-slate-600 mb-1">Preview</div>
                     <div className="w-full h-32 bg-slate-100 rounded overflow-hidden flex items-center justify-center">
-                      <img src={form.image} alt="preview" className="max-h-full object-contain" />
+                      <img src={form.imageUrl} alt="preview" className="max-h-full object-contain" />
                     </div>
                   </div>
                 )}
@@ -438,6 +444,9 @@ export default function ProductsAdmin() {
                   {formLoading ? (editingProduct ? "Saving..." : "Creating...") : (editingProduct ? "Save changes" : "Create product")}
                 </button>
               </div>
+
+
+
             </form>
           </aside>
         )}
