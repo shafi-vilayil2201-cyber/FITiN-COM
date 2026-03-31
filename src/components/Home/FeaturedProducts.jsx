@@ -47,14 +47,14 @@ const FeaturedProducts = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-6">
-        
+
         {products.slice(0, 6).map((product) => (
           <div
             key={product.id}
             className="bg-white shadow-md rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300"
           >
             <img
-              src={product.image}
+              src={product.imageUrl}
               alt={product.name}
               className="h-56 w-full object-cover"
             />

@@ -5,8 +5,8 @@ import { toast } from "react-toastify";
 
 
 const CartItem = () => {
-  const {cart,removeFromCart,increaseQty,decreaseQty,proceedToBuy,} = useContext(CartContext);
-  
+  const { cart, removeFromCart, increaseQty, decreaseQty, proceedToBuy, } = useContext(CartContext);
+
   const navigate = useNavigate()
 
   if (!cart || cart.length === 0) {
@@ -18,7 +18,7 @@ const CartItem = () => {
   }
 
   const totalPrice = cart.reduce(
-    (acc, item) => acc + item.price * item.quantity,0);
+    (acc, item) => acc + item.price * item.quantity, 0);
 
   return (
     <div className="min-h-screen p-6">
@@ -32,7 +32,7 @@ const CartItem = () => {
           >
             <div className="flex items-center gap-4">
               <img
-                src={item.image}
+                src={item.imageUrl}
                 alt={item.name}
                 className="w-20 h-20 object-cover rounded-lg"
               />
@@ -78,11 +78,11 @@ const CartItem = () => {
           Total: ₹{totalPrice}
         </h2>
         <button
-            onClick={() => { toast.success("Proceeding to checkout"); navigate("/checkout"); }}
-            className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700"
-            >
-            Proceed to Pay
-            </button>
+          onClick={() => { toast.success("Proceeding to checkout"); navigate("/checkout"); }}
+          className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700"
+        >
+          Proceed to Pay
+        </button>
       </div>
     </div>
   );
