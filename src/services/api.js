@@ -97,6 +97,21 @@ export const removeFromWishlistAPI = async (productId) => {
   return handleRequest(api.delete(`wishlist/${encodeURIComponent(productId)}`));
 };
 
+export const getCart = async () => {
+  return handleRequest(api.get("cart"));
+};
+export const addToCartAPI = async (productId) => {
+  return handleRequest(api.post(`cart/${encodeURIComponent(productId)}`));
+};
+export const removeFromCartAPI = async (productId) => {
+  return handleRequest(api.delete(`cart/${encodeURIComponent(productId)}`));
+};
+export const increaseCartQtyAPI = async (productId) => {
+  return handleRequest(api.patch(`cart/increase/${encodeURIComponent(productId)}`));
+};
+export const decreaseCartQtyAPI = async (productId) => {
+  return handleRequest(api.patch(`cart/decrease/${encodeURIComponent(productId)}`));
+};
 
 
 
