@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllProducts } from "../../services/api";
+import { getAllCategories, getAllProducts } from "../../services/api";
 
 
 const Categories = () => {
@@ -11,13 +11,9 @@ const Categories = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await getAllProducts();
-
-                const uniqueCategories = Array.from(
-                    new Map(data.map((item) => [item.category, item.imageUrl])).entries()
-                ).map(([name, image]) => ({ name, image }));
-                setCategories(uniqueCategories);
-                setProducts(data);
+                const [productData, categoriesData] = await Promise.all([getAllProducts(), getAllCategories()])
+                setProducts(productData);
+                setCategories(categoriesData);
             } catch (error) {
                 console.error("Error fetching products:", error);
             }
@@ -27,9 +23,8 @@ const Categories = () => {
 
     const navigate = useNavigate();
 
-
     const filteredProducts = selectedCategory
-        ? products.filter((p) => p.category === selectedCategory)
+        ? products.filter((p) => p.categoryName === selectedCategory)
         : [];
 
     return (
@@ -64,7 +59,6 @@ const Categories = () => {
                     </div>
                 </div>
 
-
                 {selectedCategory && (
                     <div className="mt-8">
                         <h2 className="text-3xl font-bold mb-6 text-emerald-700 border-b-4 border-emerald-500 inline-block pb-1">
@@ -78,7 +72,7 @@ const Categories = () => {
                                     className="border border-gray-100 rounded-2xl p-6 bg-white shadow-md hover:shadow-2xl hover:-translate-y-3 transition-all duration-500"
                                 >
                                     <img
-                                        src={product.imagUrl}
+                                        src={product.imageUrl}
                                         alt={product.name}
                                         className="w-full h-60 object-cover rounded-xl mb-5 shadow-lg transition-transform duration-700 ease-in-out hover:scale-110"
                                     />
