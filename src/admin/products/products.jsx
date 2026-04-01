@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-/* Environment-aware API base */
-import { API_BASE } from '../../services/api';
+/* Environment-aware API helpers */
+import { 
+  adminGetProducts, 
+  getAllCategories, 
+  adminCreateProduct, 
+  adminUpdateProduct, 
+  adminDeleteProduct 
+} from '../../services/api';
 
 export default function ProductsAdmin() {
   const [items, setItems] = useState([]);
@@ -35,15 +41,12 @@ export default function ProductsAdmin() {
     const loadProducts = async () => {
       try {
         setLoading(true);
-        const httpResponse = await fetch(`${API_BASE}/products`);
-        if (!httpResponse.ok) throw new Error("Failed to fetch products");
-
-        const result = await httpResponse.json();
-
-        setItems(Array.isArray(result.data) ? result.data : []);
+        // Use the authenticated helper which hits /api/admin/products
+        const data = await adminGetProducts();
+        setItems(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Product fetch error:", error);
-        toast.error("Failed tp load products");
+        toast.error(error.message || "Failed to load products");
         setItems([]);
       } finally {
         setLoading(false);
@@ -54,9 +57,12 @@ export default function ProductsAdmin() {
 
   useEffect(() => {
     const loadCategories = async () => {
-      const res = await fetch(`${API_BASE}/categories`);
-      const result = await res.json();
-      setCategories(result.data || []);
+      try {
+        const data = await getAllCategories();
+        setCategories(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Category fetch error:", err);
+      }
     };
     loadCategories();
   }, []);
@@ -77,13 +83,8 @@ export default function ProductsAdmin() {
     setDeletingId(id);
 
     try {
-      const res = await fetch(`${API_BASE}/products/${encodeURIComponent(id)}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        throw new Error(`Server responded ${res.status}`);
-      }
+      // Use the authenticated helper which hits /api/admin/products/:id
+      await adminDeleteProduct(id);
 
       setItems((prev) => prev.filter((p) => String(p.id) !== String(id)));
       toast.success("Product deleted");
@@ -185,20 +186,14 @@ export default function ProductsAdmin() {
       formData.append("Discount", form.discount || 0);
       formData.append("Rating", form.rating || 0);
 
-
-      const url = editingProduct
-        ? `${API_BASE}/admin/products/${editingProduct.id}` : `${API_BASE}/admin/products`;
-
-      const method = editingProduct ? "PUT" : "POST";
-
-      const res = await fetch(url, {
-        method: method,
-        body: formData,
-      });
-      if (!res.ok) throw new Error(`Server responded ${res.status}`);
-
-      const result = await res.json();
-      const saved = result.data;
+      let saved;
+      if (editingProduct) {
+        // Use the PUT helper
+        saved = await adminUpdateProduct(editingProduct.id, formData);
+      } else {
+        // Use the POST helper
+        saved = await adminCreateProduct(formData);
+      }
 
       if (editingProduct) {
         setItems((prev) => prev.map((p) => (String(p.id) === String(saved.id) ? saved : p)));
