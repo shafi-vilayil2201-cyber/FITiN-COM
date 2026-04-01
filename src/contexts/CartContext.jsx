@@ -1,185 +1,120 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import axios from "axios";
 import { AuthContext } from "./AuthContext.jsx";
 import { toast } from "react-toastify";
+import {
+  getCart,
+  addToCartAPI,
+  removeFromCartAPI,
+  increaseCartQtyAPI,
+  decreaseCartQtyAPI,
+} from "../services/api";
 
 export const CartContext = createContext();
-
-import { API_BASE } from '../services/api';
 
 export const CartProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
   const [cart, setCart] = useState([]);
-  const [wishList, setWishList] = useState([]);
 
-  // Load cart & wishlist from backend for logged-in user
+  // 1. Fetch cart from backend
+  const refreshCart = async () => {
+    if (!user) {
+      setCart([]);
+      return;
+    }
+    try {
+      const data = await getCart();
+      setCart(data || []);
+    } catch (error) {
+      console.error("Error fetching cart:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      if (!user || !user.id || user.role === 'admin') {
-        setCart([]);
-        setWishList([]);
-        return;
-      }
-
-      try {
-        const res = await axios.get(`${API_BASE}/users/${encodeURIComponent(user.id)}`);
-        setCart(res.data.cart || []);
-        setWishList(res.data.wishlist || []);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    fetchData();
+    refreshCart();
   }, [user]);
 
-  // Helper: sync cart to backend
-  const syncCartToBackend = async (updatedCart) => {
-    if (!user || !user.id || user.role === 'admin') return;
+  // 2. Add to Cart (show message if already in cart)
+  const addToCart = async (product) => {
+    if (!user) {
+      toast.info("Please login to add items to cart");
+      return;
+    }
+
+    // Check if item already exists in cart
+    if (cart.some((item) => item.id === product.id || item.productId === product.id)) {
+      toast.info("Item already in cart");
+      return;
+    }
 
     try {
-      await axios.patch(`${API_BASE}/users/${encodeURIComponent(user.id)}`, {
-        cart: updatedCart,
-      });
+      await addToCartAPI(product.id);
+      await refreshCart(); // Refresh to get updated cart from backend
+      toast.success("Added to cart!");
     } catch (error) {
-      console.error("Error syncing cart:", error);
+      toast.error("Failed to add to cart");
     }
   };
 
-  // Helper: sync wishlist to backend
-  const syncWishlistToBackend = async (updatedWishlist) => {
-    if (!user || !user.id || user.role === 'admin') return;
-
+  // 3. Remove from Cart
+  const removeFromCart = async (productId) => {
+    if (!user) return;
     try {
-      await axios.patch(`${API_BASE}/users/${encodeURIComponent(user.id)}`, {
-        wishlist: updatedWishlist,
-      });
+      await removeFromCartAPI(productId);
+      setCart((prev) => prev.filter((item) => item.id !== productId && item.productId !== productId));
+      toast.info("Removed from cart");
     } catch (error) {
-      console.error("Error syncing wishlist:", error);
+      toast.error("Failed to remove item");
     }
   };
 
-  // Add to Cart
-  const addToCart = (product) => {
-    setCart((prevCart) => {
-      const existing = prevCart.find((item) => item.id === product.id);
-      let updated;
-
-      if (existing) {
-        updated = prevCart.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      } else {
-        updated = [...prevCart, { ...product, quantity: 1 }];
-      }
-
-      syncCartToBackend(updated);
-      return updated;
-    });
-
-    toast.success("Added to cart!");
+  // 4. Increase Quantity
+  const increaseQty = async (productId) => {
+    try {
+      await increaseCartQtyAPI(productId);
+      await refreshCart();
+    } catch (error) {
+      toast.error("Failed to increase quantity");
+    }
   };
 
-  // Remove Item from Cart
-  const removeFromCart = (id) => {
-    setCart((prevCart) => {
-      const updated = prevCart.filter((item) => item.id !== id);
-      syncCartToBackend(updated);
-      return updated;
-    });
+  // 5. Decrease Quantity
+  const decreaseQty = async (productId) => {
+    try {
+      await decreaseCartQtyAPI(productId);
+      await refreshCart();
+    } catch (error) {
+      toast.error("Failed to decrease quantity");
+    }
   };
 
-  // Increase Qty
-  const increaseQty = (id) => {
-    setCart((prevCart) => {
-      const updated = prevCart.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      );
-
-      syncCartToBackend(updated);
-      return updated;
-    });
-  };
-
-  // Decrease Qty
-  const decreaseQty = (id) => {
-    setCart((prevCart) => {
-      const updated = prevCart
-        .map((item) =>
-          item.id === id
-            ? { ...item, quantity: Math.max(item.quantity - 1, 1) }
-            : item
-        )
-        .filter((item) => item.quantity > 0);
-
-      syncCartToBackend(updated);
-      return updated;
-    });
-
-    toast.success("Quantity decreased");
-  };
-
-  // Clear Cart
-  const clearCart = () => {
-    setCart([]);
-    syncCartToBackend([]);
-  };
-
-  // Proceed to Buy (update stock in backend)
-  const proceedToBuy = async () => {
+  // 6. Clear Cart (remove all items one by one)
+  const clearCart = async () => {
     try {
       for (let item of cart) {
-        const newStock = Math.max(Number(item.stock || 0) - Number(item.quantity || 1), 0);
-
-        await axios.patch(`${API_BASE}/products/${encodeURIComponent(item.id)}`, {
-          stock: newStock,
-        });
+        await removeFromCartAPI(item.productId || item.id);
       }
-
-      toast.success("Purchase successful");
-      clearCart();
+      setCart([]);
     } catch (error) {
-      console.error("Error updating stock:", error);
-      alert("Failed to process purchase");
+      console.error("Failed to clear cart:", error);
     }
   };
 
-  // Wishlist Operations
-  const addToWishlist = (product) => {
-    setWishList((prev) => {
-      if (prev.some((item) => item.id === product.id)) {
-        toast.info("Already in wishlist");
-        return prev;
-      }
-      const updated = [...prev, product];
-      syncWishlistToBackend(updated);
-      toast.success("Added to wishlist");
-      return updated;
-    });
-  };
-
-  const removeFromWishlist = (productId) => {
-    setWishList((prev) => {
-      const updated = prev.filter((item) => item.id !== productId);
-      syncWishlistToBackend(updated);
-      toast.success("Removed from wishlist");
-      return updated;
-    });
+  // Helper: check if item is in cart
+  const isInCart = (productId) => {
+    return cart.some((item) => item.id === productId || item.productId === productId);
   };
 
   return (
     <CartContext.Provider
       value={{
         cart,
-        wishList,
         addToCart,
         removeFromCart,
         increaseQty,
         decreaseQty,
-        proceedToBuy,
         clearCart,
-        addToWishlist,
-        removeFromWishlist,
+        refreshCart,
+        isInCart,
       }}
     >
       {children}
