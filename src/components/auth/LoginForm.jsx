@@ -6,7 +6,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import { useAdminAuth } from '../../admin/context/AdminAuthContext';
 import { toast } from 'react-toastify';
 
-import { API_BASE } from '../../services/api';
+import { API_BASE, loginUser } from '../../services/api';
 import LoginImg2 from '../../assets/Loginimg2.png';
 
 const LoginForm = () => {
@@ -57,66 +57,34 @@ const LoginForm = () => {
       toast.warning('Please enter email and password');
       return;
     }
-
     setLoading(true);
     try {
-      // Fetch users and check credentials
-      const usersRes = await fetch(`${API_BASE}/users`);
-      if (!usersRes.ok) throw new Error('Network issue while fetching users');
-      const users = await usersRes.json();
-      const foundUser = users.find(u => u.email === eMail && u.password === pass);
+      // 1. Call the new login API (returns normalized data via handleRequest)
+      const userObj = await loginUser(eMail, pass);
+      console.log("loggrf in user credential:", userObj);
+      // 2. Persist safely
+      localStorage.setItem('currentUser', JSON.stringify(userObj));
+      if (appLogin) appLogin(userObj);
+      if (adminContext?.login) adminContext.login(userObj);
 
-      if (foundUser) {
-        if (foundUser.isBlock) {
-          toast.error('Your account has been blocked. Contact the administrator.');
-          setLoading(false);
-          return;
-        }
+      toast.success('Login successful!');
 
-        const userObj = { ...foundUser, role: foundUser.role || 'user' };
-        localStorage.setItem('currentUser', JSON.stringify(userObj));
-        if (appLogin) appLogin(userObj);
-        if (userObj.role === 'admin' && adminContext?.login) {
-          adminContext.login(userObj);
-          toast.success('Admin login successful');
-          navigate('/admin/dashboard');
-        } else {
-          toast.success('Login successful!');
-          navigate('/');
-        }
-        return;
-      }
-
-      // Check admins if normal user not found
-      const adminsRes = await fetch(`${API_BASE}/admins`);
-      if (!adminsRes.ok) throw new Error('Network issue while fetching admins');
-      const admins = await adminsRes.json();
-      const foundAdmin = admins.find(a => a.email === eMail && a.password === pass);
-
-      if (foundAdmin) {
-        if (foundAdmin.isBlock) {
-          toast.error('This admin account has been blocked. Contact the super-admin.');
-          setLoading(false);
-          return;
-        }
-
-        const adminObj = { ...foundAdmin, role: foundAdmin.role || 'admin' };
-        localStorage.setItem('currentUser', JSON.stringify(adminObj));
-        if (adminContext?.login) adminContext.login(adminObj);
-        if (appLogin) appLogin(adminObj);
-        toast.success('Admin login successful');
+      // 3. Navigate based on role (checks both 'role' and 'Role')
+      const userRole = userObj.role || userObj.Role;
+      if (userRole === 'Admin' || userRole === 'admin') {
         navigate('/admin/dashboard');
-        return;
+      } else {
+        navigate('/');
       }
-
-      toast.error('Invalid email or password');
-    } catch (err) {
-      console.error('Error during login:', err);
-      toast.error('An error occurred during login');
+    } catch (error) {
+      console.error("Login error:", error);
+      // The message now comes directly from your backend thanks to handleRequest!
+      toast.error(error.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="mx-auto max-w-sm sm:max-w-md md:max-w-4xl lg:max-w-6xl mt-14 px-4">

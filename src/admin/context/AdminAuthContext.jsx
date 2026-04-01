@@ -7,25 +7,29 @@ export function useAdminAuth() { return useContext(AdminAuthContext); }
 export function AdminAuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(() => {
     try {
-      const raw = localStorage.getItem('currentAdmin');
+      // Use the same key as the main AuthContext to stay in sync
+      const raw = localStorage.getItem('currentUser');
       return raw ? JSON.parse(raw) : null;
     } catch { return null; }
   });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (currentUser) localStorage.setItem('currentAdmin', JSON.stringify(currentUser));
-    else localStorage.removeItem('currentAdmin');
+    if (currentUser) localStorage.setItem('currentUser', JSON.stringify(currentUser));
   }, [currentUser]);
 
   const login = (userObj) => setCurrentUser(userObj);
 
   const logout = () => {
-    try { localStorage.removeItem('currentAdmin'); } catch (e) { }
+    try { localStorage.removeItem('currentUser'); } catch (e) { }
     setCurrentUser(null);
   };
 
-  const isAdmin = !!(currentUser && (currentUser.role === 'admin' || currentUser.isAdmin));
+  const isAdmin = !!(currentUser && (
+    currentUser.role?.toLowerCase() === 'admin' ||
+    currentUser.Role?.toLowerCase() === 'admin' ||
+    currentUser.isAdmin
+  ));
 
   return (
     <AdminAuthContext.Provider value={{ currentUser, login, logout, isAdmin, loading, setLoading }}>
