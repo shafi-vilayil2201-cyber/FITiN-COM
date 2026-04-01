@@ -3,7 +3,7 @@ import axios from "axios";
 const DEFAULT_TIMEOUT = 10_000;
 
 export const API_BASE =
-  import.meta.env.VITE_API_BASE || "http://localhost:5251/api";
+  import.meta.env.VITE_API_BASE || "http://localhost:5251/api/";
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -14,7 +14,8 @@ const api = axios.create({
 async function handleRequest(promise) {
   try {
     const res = await promise;
-    return res?.data?.data ?? null;
+    // Normalized check for data wrapper
+    return res?.data?.data ?? res?.data ?? null;
   } catch (err) {
     if (err?.response) {
       const data = err.response.data;
@@ -52,7 +53,7 @@ export const registerUser = async (name, email, password) => {
   formData.append("Email", email);
   formData.append("Password", password);
 
-  return await handleRequest(api.post("/auth/register", formData));
+  return await handleRequest(api.post("auth/register", formData));
 };
 
 export const loginUser = async (email, password) => {
@@ -60,22 +61,22 @@ export const loginUser = async (email, password) => {
   formData.append("Email", email);
   formData.append("Password", password);
 
-  return await handleRequest(api.post("/auth/login", formData));
+  return await handleRequest(api.post("auth/login", formData));
 };
 
-export const getProfile = () => handleRequest(api.get("/auth/profile"));
+export const getProfile = () => handleRequest(api.get("auth/profile"));
 
-export const getAllProducts = async () => handleRequest(api.get("/products"));
+export const getAllProducts = async () => handleRequest(api.get("products"));
 
-export const adminGetProducts = async () => handleRequest(api.get("/admin/products"));
+export const adminGetProducts = async () => handleRequest(api.get("admin/products"));
 
-export const adminCreateProduct = async (formData) => handleRequest(api.post("/admin/products", formData));
+export const adminCreateProduct = async (formData) => handleRequest(api.post("admin/products", formData));
 
-export const adminUpdateProduct = async (id, formData) => handleRequest(api.put(`/admin/products/${encodeURIComponent(id)}`, formData));
+export const adminUpdateProduct = async (id, formData) => handleRequest(api.put(`admin/products/${encodeURIComponent(id)}`, formData));
 
-export const adminDeleteProduct = async (id) => handleRequest(api.delete(`/admin/products/${encodeURIComponent(id)}`));
+export const adminDeleteProduct = async (id) => handleRequest(api.delete(`admin/products/${encodeURIComponent(id)}`));
 
-export const getAllCategories = async () => handleRequest(api.get("/categories"));
+export const getAllCategories = async () => handleRequest(api.get("categories"));
 
 export const getProductById = async (id) => {
   if (id === undefined || id === null) {
