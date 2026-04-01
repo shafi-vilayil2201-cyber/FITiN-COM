@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 /* Environment-aware API helpers */
-import { 
-  adminGetProducts, 
-  getAllCategories, 
-  adminCreateProduct, 
-  adminUpdateProduct, 
-  adminDeleteProduct 
+import {
+  adminGetProducts,
+  getAllCategories,
+  adminCreateProduct,
+  adminUpdateProduct,
+  adminDeleteProduct
 } from '../../services/api';
 
 export default function ProductsAdmin() {
