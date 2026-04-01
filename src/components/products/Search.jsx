@@ -4,7 +4,8 @@ import { getAllProducts } from "../../services/api";
 import { FaHeart } from "react-icons/fa";
 import { WishlistContext } from "../../contexts/wishListContext";
 
-const Search = () => {
+const Search = () =>
+{
   const [products, setProducts] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -23,9 +24,11 @@ const Search = () => {
 
         const uniqueCategories = [...new Set(res.map((p) => p.categoryName).filter(Boolean))];
         setCategories(uniqueCategories);
-      } catch (error) {
+      } catch (error)
+      {
         console.error("Error fetching products:", error);
-      } finally {
+      } finally
+      {
         setLoading(false);
       }
     };
@@ -33,9 +36,11 @@ const Search = () => {
     fetchProducts();
   }, []);
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     let result = [...products];
-    if (searchTerm) {
+    if (searchTerm)
+    {
       result = result.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
     }
     if (category !== "all") {
@@ -109,7 +114,7 @@ const Search = () => {
                     className="w-full h-56 object-cover rounded-t-2xl"
                   />
                   <span className="absolute top-3 left-3 bg-linear-to-r from-emerald-600 to-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
-                    {product.category || "New"}
+                    {product.categoryName || "New"}
                   </span>
                   <button
                     onClick={() =>

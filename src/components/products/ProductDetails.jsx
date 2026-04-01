@@ -5,7 +5,8 @@ import { CartContext } from "../../contexts/CartContext.jsx";
 import { WishlistContext } from '../../contexts/wishListContext.jsx'
 import "../../../src/App.css";
 
-const ProductDetails = () => {
+const ProductDetails = () =>
+{
   const { id } = useParams();
   const [details, setDetails] = useState(null);
   const [pending, setPending] = useState(true);
@@ -13,16 +14,21 @@ const ProductDetails = () => {
   const { addToWishlist } = useContext(WishlistContext);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchProduct = async () => {
+  useEffect(() =>
+  {
+    const fetchProduct = async () =>
+    {
       setPending(true);
-      try {
+      try
+      {
         const data = await getAllProducts();
         const product = data.find((item) => String(item.id) === id);
         setDetails(product);
-      } catch (error) {
+      } catch (error)
+      {
         console.error("Error fetching product details:", error);
-      } finally {
+      } finally
+      {
         setPending(false);
       }
     };
@@ -30,7 +36,8 @@ const ProductDetails = () => {
   }, [id]);
 
 
-  if (pending) {
+  if (pending)
+  {
     return (
       <div className="flex justify-center items-center h-screen text-lg text-gray-600">
         Loading product details...
@@ -39,7 +46,8 @@ const ProductDetails = () => {
   }
 
 
-  if (!details) {
+  if (!details)
+  {
     return (
       <div className="flex justify-center items-center h-screen text-lg text-red-500">
         Product not found!
@@ -86,7 +94,7 @@ const ProductDetails = () => {
 
           <div className="flex flex-wrap gap-4 mb-4 text-gray-700 text-sm">
             <p>
-              <span className="font-semibold">Category:</span> {details.category}
+              <span className="font-semibold">Category:</span> {details.categoryName}
             </p>
             <p>
               <span className="font-semibold">Stock:</span> {details.stock}

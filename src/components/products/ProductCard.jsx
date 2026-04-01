@@ -2,26 +2,33 @@ import React, { useEffect, useState } from "react";
 import { getAllProducts } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import Search from "./Search";
-const ProductCard = () => {
+const ProductCard = () =>
+{
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
+    useEffect(() =>
+    {
+        const fetchProducts = async () =>
+        {
+            try
+            {
                 const data = await getAllProducts();
                 setProducts(data);
-            } catch (error) {
+            } catch (error)
+            {
                 console.error("Error fetching products:", error);
-            } finally {
+            } finally
+            {
                 setLoading(false);
             }
         };
         fetchProducts();
     }, []);
 
-    if (loading) {
+    if (loading)
+    {
         return (
             <div className="flex justify-center items-center h-screen text-xl font-semibold text-gray-700 animate-pulse">
                 Loading products...
