@@ -6,7 +6,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import { useAdminAuth } from '../../admin/context/AdminAuthContext';
 import { toast } from 'react-toastify';
 
-import { API_BASE } from '../../services/api';
+import { API_BASE, loginUser } from '../../services/api';
 import LoginImg2 from '../../assets/Loginimg2.png';
 
 const LoginForm = () => {
@@ -59,29 +59,26 @@ const LoginForm = () => {
     }
     setLoading(true);
     try {
-      // Fetch users and check credentials
-      const response = await loginUser(eMail, pass);
-      if (response.success) {
-        const userObj = response.data;
+      // 1. Call the new login API (returns normalized data via handleRequest)
+      const userObj = await loginUser(eMail, pass);
+      console.log("loggrf in user credential:", userObj);
+      // 2. Persist safely
+      localStorage.setItem('currentUser', JSON.stringify(userObj));
+      if (appLogin) appLogin(userObj);
+      if (adminContext?.login) adminContext.login(userObj);
 
-        localStorage.setItem('currentUser', JSON.stringify(userObj));
-        if (appLogin) appLogin(userObj);
+      toast.success('Login successful!');
 
-        if (adminContext?.login)
-          adminContext.login(userObj);
-
-        toast.success('Login successful!');
-
-        if (userObj.role === 'Admin' || userObj.role === 'admin') {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/');
-        }
+      // 3. Navigate based on role (checks both 'role' and 'Role')
+      const userRole = userObj.role || userObj.Role;
+      if (userRole === 'Admin' || userRole === 'admin') {
+        navigate('/admin/dashboard');
       } else {
-        toast.error(response.message || "Invalid credentials");
+        navigate('/');
       }
     } catch (error) {
-      console.error("login error:", error);
+      console.error("Login error:", error);
+      // The message now comes directly from your backend thanks to handleRequest!
       toast.error(error.message || "Invalid email or password");
     } finally {
       setLoading(false);

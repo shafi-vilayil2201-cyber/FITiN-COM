@@ -33,51 +33,37 @@ export function AuthProvider({ children }) {
         const raw = localStorage.getItem('currentUser');
         if (!raw) return;
 
-        const parsed = JSON.parse(raw);
-        if (!parsed?.id) return;
+        // 1. Call the new Profile endpoint to check the HttpOnly cookie
+        const freshUser = await getProfile();
 
-        // helper: fetch a user/admin from backend
-        const tryFetch = async (endpoint) => {
-          try {
-            const res = await fetch(`${API_BASE}/${endpoint}/${encodeURIComponent(parsed.id)}`);
-            if (!res.ok) return null;
-            return await res.json();
-          } catch {
-            return null;
+        if (freshUser) {
+          // CHECK IF BLOCKED
+          if (freshUser.isActive === false) {
+            if (mounted) {
+              setUser(null);
+              localStorage.removeItem("currentUser");
+              toast.error("Your account has been blocked.");
+            }
+            return;
           }
-        };
-
-        let fresh =
-          (await tryFetch("users")) ||
-          (await tryFetch("admins"));
-
-        // If user/admin not found → remove session
-        if (!fresh) {
+          if (mounted) {
+            setUser(freshUser);
+            localStorage.setItem('currentUser', JSON.stringify(freshUser));
+          }
+        } else {
+          // 2. If cookie is missing/expired, logout the user
           if (mounted) {
             setUser(null);
-            toast.info("Session ended: user not found.");
+            localStorage.removeItem('currentUser');
+            toast.info("Session ended.");
           }
-          return;
         }
-
-        // If user is blocked → logout
-        if (fresh.isBlock) {
-          if (mounted) {
-            setUser(null);
-            try { localStorage.removeItem('currentUser'); } catch { }
-            toast.error("Your account has been blocked — you have been logged out.");
-          }
-          return;
-        }
-
-        // Remove password before storing
-        const refreshedSafe = { ...fresh };
-        if (refreshedSafe.password) delete refreshedSafe.password;
-
-        if (mounted) setUser(refreshedSafe);
-
       } catch (err) {
-        console.error("Error validating session:", err);
+        console.error("Session validation error:", err);
+        if (mounted) {
+          setUser(null);
+          localStorage.removeItem('currentUser');
+        }
       }
     };
 

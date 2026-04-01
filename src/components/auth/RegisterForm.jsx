@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "react-toastify";
 
-import { API_BASE } from '../../services/api';
+import { API_BASE, registerUser } from '../../services/api';
 import LoginImg from '../../assets/Loginimg.png';
 
 const SignUp = () => {
@@ -28,31 +28,18 @@ const SignUp = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!emailError && !passError && name && eMail && pass) {
-            const newUser = { name, email: eMail, password: pass };
+        if (emailError || passError || !name || !eMail || !pass) {
+            toast.warning("please fix the errors and fill all fields.");
+            return;
+        }
+        try {
+            await registerUser(name, eMail, pass);
 
-            try {
-                const response = await fetch(`${API_BASE}/users`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(newUser),
-                });
-
-                if (response.ok) {
-                    toast.success("Registration successful!");
-                    setName('');
-                    setEmail('');
-                    setPass('');
-                    navigate('/login');
-                } else {
-                    toast.error("Failed to register user.");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                toast.error("An error occurred during registration.");
-            }
-        } else {
-            toast.warning("Please fix the input errors.");
+            toast.success("Registration successful! Please login.");
+            navigate("/login");
+        } catch (error) {
+            console.error(error.message || "registration failed");
+            toast.error(error.message || "An error occurred during registration.");
         }
     };
 

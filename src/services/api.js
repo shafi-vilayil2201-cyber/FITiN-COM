@@ -17,10 +17,21 @@ async function handleRequest(promise) {
     return res?.data?.data ?? null;
   } catch (err) {
     if (err?.response) {
-      const message =
-        err.response.data?.message ||
-        err.response.data?.error ||
-        `Request failed with status ${err.response.status}`;
+      const data = err.response.data;
+
+      // 1. Try to get specific validation errors (e.g. from .NET Model State)
+      let message = data?.message || data?.Message || data?.title;
+
+      if (data?.errors) {
+        // Flatten the errors object into a string
+        const errorList = Object.values(data.errors).flat();
+        if (errorList.length > 0) message = errorList[0]; // Take the first error
+      }
+
+      if (!message) {
+        message = `Request failed with status ${err.response.status}`;
+      }
+
       const e = new Error(message);
       e.status = err.response.status;
       e.response = err.response;
@@ -35,28 +46,24 @@ async function handleRequest(promise) {
   }
 }
 
-export const loginUser = async (email, password) => {
-  const formData = new FormData();
-  formData.append("Email", email);
-  formData.append("Password", password);
-
-  const res = await api.post("/auth/login", formData);
-  return res.data;
-};
-
 export const registerUser = async (name, email, password) => {
   const formData = new FormData();
   formData.append("Name", name);
   formData.append("Email", email);
   formData.append("Password", password);
 
-  const res = await api.post("/auth/register", formData);
-  return res.data;
+  return await handleRequest(api.post("/auth/register", formData));
 };
 
-export const getProfile = async () => {
-  return handleRequest(api.get("/auth/profile"));
-}
+export const loginUser = async (email, password) => {
+  const formData = new FormData();
+  formData.append("Email", email);
+  formData.append("Password", password);
+
+  return await handleRequest(api.post("/auth/login", formData));
+};
+
+export const getProfile = () => handleRequest(api.get("/auth/profile"));
 
 export const getAllProducts = async () => handleRequest(api.get("/products"));
 
