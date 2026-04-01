@@ -86,16 +86,18 @@ export const getProductById = async (id) => {
 };
 
 export const getWishlist = async () => {
-  return [];
+  return handleRequest(api.get("wishlist"));
 };
 
-export const addToWishlistAPI = async () => {
-  return null;
+export const addToWishlistAPI = async (productId) => {
+  return handleRequest(api.post(`wishlist/${encodeURIComponent(productId)}`));
 };
 
-export const removeFromWishlistAPI = async () => {
-  return null;
+export const removeFromWishlistAPI = async (productId) => {
+  return handleRequest(api.delete(`wishlist/${encodeURIComponent(productId)}`));
 };
+
+
 
 
 

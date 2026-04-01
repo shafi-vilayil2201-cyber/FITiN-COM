@@ -1,4 +1,3 @@
-
 import React, { createContext, useEffect, useState, useContext } from "react";
 import { getWishlist, addToWishlistAPI, removeFromWishlistAPI } from "../services/api";
 import { toast } from "react-toastify";
@@ -6,106 +5,70 @@ import { AuthContext } from "./AuthContext";
 
 export const WishlistContext = createContext();
 
-export const WishlistProvider = ({ children, localWishlist = [] }) =>
-{
+export const WishlistProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
-  const userId = user?.id;
-
   const [wishList, setWishlist] = useState([]);
 
-  const mergeLocalWithDB = async (dbWishlist) =>
-  {
-    for (let item of localWishlist)
-    {
-      if (!dbWishlist.some((i) => String(i.id) === String(item.id)))
-      {
-        try
-        {
-          await addToWishlistAPI(userId, item);
-        } catch (err)
-        {
-          console.error("Failed to merge item into wishlist:", err);
-        }
-      }
-    }
-  };
-
-  const refreshWishlist = async () =>
-  {
-    if (!userId || user.role === 'admin')
-    {
+  // 1. Fetch wishlist from backend
+  const refreshWishlist = async () => {
+    if (!user) {
       setWishlist([]);
       return;
     }
-    try
-    {
-      const dbWishlist = (await getWishlist(userId)) || [];
-      await mergeLocalWithDB(dbWishlist);
-      const updatedWishlist = (await getWishlist(userId)) || [];
-      setWishlist(updatedWishlist);
-    } catch (err)
-    {
-      console.error("Failed to refresh wishlist:", err);
-      setWishlist([]);
+    try {
+      const data = await getWishlist();
+      setWishlist(data || []);
+    } catch (error) {
+      console.error("Failed to fetch wishlist", error);
     }
   };
 
-  useEffect(() =>
-  {
+  useEffect(() => {
     refreshWishlist();
-  }, [userId]);
+  }, [user]);
 
-  const addToWishlist = async (product) =>
-  {
-    if (!userId || user.role === 'admin')
-    {
-      toast.info("Please log in to add items to your wishlist!");
+  // 2. Add to wishlist
+  const addToWishlist = async (product) => {
+    if (!user) {
+      toast.info("Please login to use the wishlist");
       return;
     }
-    if (wishList.some((i) => String(i.id) === String(product.id))) return;
 
-    const minimalProduct = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      category: product.category,
-    };
+    // Avoid duplicates
+    if (wishList.some((item) => item.id === product.id)) {
+      toast.info("Item already in wishlist");
+      return;
+    }
 
-    setWishlist((prev) => [...prev, minimalProduct]);
-    toast.success("Added to wishlist!");
-
-    try
-    {
-      await addToWishlistAPI(userId, minimalProduct);
-    } catch (err)
-    {
-      console.error("Failed to add to wishlist:", err);
+    try {
+      await addToWishlistAPI(product.id); // Call the API from api.js
+      setWishlist((prev) => [...prev, product]);
+      toast.success("Added to wishlist");
+    } catch (error) {
       toast.error("Failed to add to wishlist");
-      setWishlist((prev) => prev.filter((i) => i.id !== product.id));
     }
   };
 
-  const removeFromWishlist = async (productId) =>
-  {
-    if (!userId) return;
-    setWishlist((prev) => prev.filter((i) => i.id !== productId));
-    toast.info("Removed from wishlist");
-
-    try
-    {
-      await removeFromWishlistAPI(userId, productId);
-    } catch (err)
-    {
-      console.error("Failed to remove wishlist item:", err);
+  // 3. Remove from wishlist
+  const removeFromWishlist = async (productId) => {
+    if (!user) return;
+    try {
+      await removeFromWishlistAPI(productId);
+      setWishlist((prev) => prev.filter((item) => item.id !== productId));
+      toast.info("Removed from wishlist");
+    } catch (error) {
       toast.error("Failed to remove item");
-      await refreshWishlist();
     }
+  };
+
+  // 4. Helper to check if item is in wishlist
+  const isInWishlist = (productId) => {
+    return wishList.some((item) => item.id === productId);
   };
 
   return (
     <WishlistContext.Provider
-      value={{ wishList, addToWishlist, removeFromWishlist, refreshWishlist }}
+      value={{ wishList, addToWishlist, removeFromWishlist, refreshWishlist, isInWishlist }}
     >
       {children}
     </WishlistContext.Provider>
