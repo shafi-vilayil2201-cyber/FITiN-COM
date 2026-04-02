@@ -11,7 +11,6 @@ const statusToPercent = (status) => {
     case "processing": return 33;
     case "shipped": return 66;
     case "delivered": return 100;
-
     default: return 0;
   }
 };
@@ -182,6 +181,12 @@ export default function Profile() {
                           <div>
                             <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Order ID</div>
                             <div className="text-sm font-mono text-slate-700">#{String(order.orderId).slice(0, 8)}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Date Placed</div>
+                            <div className="text-sm text-slate-700">
+                              {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "—"}
+                            </div>
                           </div>
                           <div>
                             <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Total Amount</div>

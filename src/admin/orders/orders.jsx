@@ -72,6 +72,7 @@ export default function Orders() {
             <thead className="bg-slate-50">
               <tr>
                 <th className="px-4 py-3 text-left font-medium text-slate-600">Order ID</th>
+                <th className="px-4 py-3 text-left font-medium text-slate-600">Date</th>
                 <th className="px-4 py-3 text-left font-medium text-slate-600">Total</th>
                 <th className="px-4 py-3 text-left font-medium text-slate-600">Status</th>
                 <th className="px-4 py-3 text-left font-medium text-slate-600">Items</th>
@@ -82,21 +83,24 @@ export default function Orders() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="text-center p-8 text-slate-500">Loading...</td>
+                  <td colSpan="6" className="text-center p-8 text-slate-500">Loading...</td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan="5" className="text-center p-8 text-red-600">{error}</td>
+                  <td colSpan="6" className="text-center p-8 text-red-600">{error}</td>
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="text-center p-8 text-slate-500">No orders</td>
+                  <td colSpan="6" className="text-center p-8 text-slate-500">No orders</td>
                 </tr>
               ) : (
                 orders.map((order) => (
                   <React.Fragment key={order.orderId}>
                     <tr className="border-b last:border-0 hover:bg-slate-50 transition-colors">
                       <td className="px-4 py-3 font-medium text-slate-700">#{String(order.orderId).slice(0, 8)}</td>
+                      <td className="px-4 py-3 text-slate-500">
+                        {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "—"}
+                      </td>
                       <td className="px-4 py-3 font-medium text-emerald-600">{displayTotal(order)}</td>
                       <td className="px-4 py-3">
                         <span
@@ -135,7 +139,7 @@ export default function Orders() {
                     </tr>
                     {expanded === order.orderId && (
                       <tr className="bg-slate-50">
-                        <td colSpan="5" className="px-4 py-3">
+                        <td colSpan="6" className="px-4 py-3">
                           <div className="space-y-2">
                             {Array.isArray(order.items) && order.items.length > 0 ? (
                               order.items.map((item, idx) => (
