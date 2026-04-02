@@ -2,131 +2,145 @@ import React, { useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import AdminNavbar from "../common/adminNavbar";
-
-
-import { FaHome, FaBoxOpen, FaShoppingCart, FaBars, FaTimes,FaUser } from "react-icons/fa";
+import {
+  FaHome,
+  FaBoxOpen,
+  FaShoppingCart,
+  FaBars,
+  FaTimes,
+  FaUser,
+  FaChartBar,
+  FaSignOutAlt
+} from "react-icons/fa";
 
 export default function AdminLayout() {
-  const { currentUser } = useAdminAuth();
-  const [open, setOpen] = useState(false);
+  const { currentUser, logout } = useAdminAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const navItems = [
-    { to: "/admin/dashboard", label: "Dashboard", icon: <FaHome className="w-5 h-5" /> },
-    { to: "/admin/products", label: "Products", icon: <FaBoxOpen className="w-5 h-5" /> },
-    { to: "/admin/orders", label: "Orders", icon: <FaShoppingCart className="w-5 h-5" /> },
-    { to: "/admin/users", label: "Users", icon: <FaUser className="w-5 h-5" /> },
+    { to: "/admin/dashboard", label: "Dashboard", icon: <FaChartBar /> },
+    { to: "/admin/products", label: "Products", icon: <FaBoxOpen /> },
+    { to: "/admin/orders", label: "Orders", icon: <FaShoppingCart /> },
+    { to: "/admin/users", label: "Users", icon: <FaUser /> },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="relative z-30">
-        <AdminNavbar />
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Top Navbar for mobile or global actions */}
+      <div className="sticky top-0 z-40 w-full">
+        <AdminNavbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
       </div>
-      <div className="flex flex-1">
+
+      <div className="flex flex-1 relative">
+        {/* Sidebar Backdrop (Mobile) */}
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden transition-opacity"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar */}
         <aside
-          className="hidden md:flex md:flex-col fixed top-0 left-0 h-screen w-72 p-6
-                     bg-linear-to-b from-emerald-200 via-emerald-100 to-emerald-50
-                     border-r border-transparent shadow-inner rounded-tr-2xl z-20"
+          className={`
+            fixed top-0 left-0 h-screen w-72 bg-white border-r border-slate-200 z-50 
+            transition-transform duration-300 ease-in-out md:translate-x-0
+            ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+            flex flex-col shadow-xl md:shadow-none
+          `}
         >
-          <div className="flex items-center gap-3 mb-6">
-            <div>
-              <img 
-              className="w-15 h-15 rounded-full flex items-center justify-center object-fill hover:animate-pulse"
-              src={currentUser.img} alt="profile" />
+          {/* Sidebar Header / Branding */}
+          <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-200/50">
+                F
+              </div>
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 tracking-tight">
+                FITiN Admin
+              </span>
             </div>
-            <div>
-              <div className="text-lg font-semibold text-slate-800"></div>
-              <div className="text-lg text-slate-500">{currentUser?.name || currentUser?.email}</div>
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg"
+            >
+              <FaTimes />
+            </button>
+          </div>
+
+          {/* Admin Profile Section */}
+          <div className="p-6 border-b border-slate-50">
+            <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-200/50">
+              <div className="relative">
+                <img
+                  className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                  src={currentUser?.img || "https://ui-avatars.com/api/?name=Admin&background=059669&color=fff"}
+                  alt="admin profile"
+                />
+                <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-800 truncate">
+                  {currentUser?.name || "Administrator"}
+                </p>
+                <p className="text-xs text-slate-500 truncate">
+                  {currentUser?.email || "admin@fitin.com"}
+                </p>
+              </div>
             </div>
           </div>
-        
-          <nav className="flex-1 space-y-2">
-            {navItems.map((n) => (
+
+          {/* Navigation Items */}
+          <nav className="flex-1 p-6 space-y-1.5 overflow-y-auto">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-3">
+              Main Menu
+            </p>
+            {navItems.map((item) => (
               <NavLink
-                key={n.to}
-                to={n.to}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-2 rounded-xl transition text-sm font-medium ${
-                    isActive
-                      ? "bg-linear-to-r from-emerald-400 to-emerald-150 text-emerald-800 shadow-xl ring-1 ring-emerald-100"
-                      : "text-slate-700 hover:bg-white/50"
-                  }`
-                }
+                key={item.to}
+                to={item.to}
+                onClick={() => setIsSidebarOpen(false)}
+                className={({ isActive }) => `
+                  flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group
+                  ${isActive
+                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200/50 transform scale-[1.02]"
+                    : "text-slate-600 hover:bg-emerald-50 hover:text-emerald-700"
+                  }
+                `}
               >
-                <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/70">
-                  {n.icon}
-                </div>
-                <span>{n.label}</span>
+                {({ isActive }) => (
+                  <>
+                    <span className={`text-lg transition-transform duration-200 group-hover:scale-110 ${isActive ? "text-white" : "text-slate-400 group-hover:text-emerald-600"}`}>
+                      {item.icon}
+                    </span>
+                    <span className="font-semibold text-sm tracking-wide">
+                      {item.label}
+                    </span>
+                  </>
+                )}
               </NavLink>
             ))}
           </nav>
 
-  
-          <footer className="mt-6 text-xs text-slate-500 ">
-            <div>Version 1.0</div>
-            <div className="mt-2">© FITiN</div>
-          </footer>
-        </aside>
-        <div className={`md:hidden fixed inset-0 z-40 ${open ? "block" : "hidden"}`}>
-          <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-
-          <div className="absolute left-0 top-0 bottom-0 w-72 p-6 bg-linear-to-b from-emerald-100 to-white shadow-lg overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center text-emerald-600 font-bold">
-                </div>
-                <div>
-                  <div className="text-lg font-semibold text-slate-800">FITiN Admin</div>
-                  <div className="text-sm text-slate-500">{currentUser?.name || currentUser?.email}</div>
-                </div>
-              </div>
-
-              <button onClick={() => setOpen(false)} className="text-slate-600">
-                <FaTimes className="w-5 h-5" />
-              </button>
+          {/* Sidebar Footer */}
+          <div className="p-6 border-t border-slate-100">
+            <button
+              onClick={logout}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all font-bold text-sm"
+            >
+              <FaSignOutAlt />
+              <span>Logout</span>
+            </button>
+            <div className="mt-4 flex flex-col items-center gap-1 opacity-50">
+              <span className="text-[10px] font-bold text-slate-400">FITiN DASHBOARD V2.0</span>
+              <span className="text-[9px] text-slate-400">© 2026 ALL RIGHTS RESERVED</span>
             </div>
-
-            <nav className="space-y-2">
-              {navItems.map((n) => (
-                <NavLink
-                  key={n.to}
-                  to={n.to}
-                  onClick={() => setOpen(false)}
-                  className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition ${
-                      isActive ? "bg-emerald-50 text-emerald-700" : "text-slate-700 hover:bg-white/50"
-                    }`
-                  }
-                >
-                  <div className="w-8 h-8 flex items-center justify-center rounded-md bg-white/70">{n.icon}</div>
-                  <span>{n.label}</span>
-                </NavLink>
-              ))}
-            </nav>
           </div>
-        </div>
+        </aside>
 
-        <main className="flex-1 ml-0 md:ml-72 pt-17 p-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-end mb-6">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setOpen(true)}
-                  className="md:hidden p-5 rounded-lg bg-white border border-slate-200 shadow-sm"
-                >
-                  <FaBars className="w-5 h-5 text-slate-700" />
-                </button>
-              </div>
-              <div className="hidden md:flex items-center gap-3">
-              </div>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-12">
-                <div className="bg-white/80 rounded-2xl p-4 shadow-[0_6px_20px_rgba(99,102,241,0.06)] border border-transparent">
-                  <Outlet />
-                </div>
-              </div>
-            </div>
+        {/* Main Content Area */}
+        <main className="flex-1 md:ml-72 min-h-screen bg-slate-50 transition-all duration-300">
+          <div className="p-4 md:p-8 max-w-7xl mx-auto">
+            <Outlet />
           </div>
         </main>
       </div>

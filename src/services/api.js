@@ -132,4 +132,9 @@ export const updateOrderStatus = async (orderId, status) => {
 };
 
 
+
+export const adminGetUsers = async () => handleRequest(api.get("users"));
+export const adminBlockUser = async (id) => handleRequest(api.patch(`users/${encodeURIComponent(id)}/block`));
+export const adminUnblockUser = async (id) => handleRequest(api.patch(`users/${encodeURIComponent(id)}/unblock`));
+
 export default api;
