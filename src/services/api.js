@@ -123,5 +123,13 @@ export const getOrderById = async (orderId) => {
   return handleRequest(api.get(`orders/${encodeURIComponent(orderId)}`));
 };
 
+export const getAllOrders = async () => {
+  return handleRequest(api.get("orders/all"));
+};
+
+export const updateOrderStatus = async (orderId, status) => {
+  return handleRequest(api.patch(`orders/${encodeURIComponent(orderId)}/status`, { status }));
+};
+
 
 export default api;
