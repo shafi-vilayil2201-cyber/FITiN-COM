@@ -1,11 +1,8 @@
 import React, { useState, useContext } from "react";
-import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { CartContext } from "../../contexts/CartContext";
 import { toast } from "react-toastify";
-
-/* Environment-based backend URL */
-import { API_BASE } from '../../services/api';
+import { createOrder } from "../../services/api";
 
 const PaymentForm = () => {
   const [formData, setFormData] = useState({
@@ -15,11 +12,9 @@ const PaymentForm = () => {
     postalCode: "",
     phone: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const productFromBuyNow = location.state?.product;
   const { cart, clearCart } = useContext(CartContext);
 
   const handleChange = (e) => {
@@ -32,82 +27,28 @@ const PaymentForm = () => {
       return;
     }
 
-    const stored = localStorage.getItem("user") || localStorage.getItem("currentUser");
-    const loggedUser = stored ? JSON.parse(stored) : null;
-
-    if (!loggedUser) {
-      toast.info("Please log in before placing an order.");
+    if (!cart || cart.length === 0) {
+      toast.warning("Your cart is empty!");
       return;
     }
 
+    setLoading(true);
     try {
-      // Load full user data from backend (fallback to local stored user)
-      let userData;
-      try {
-        const resp = await axios.get(`${API_BASE}/users/${loggedUser.id}`);
-        userData = resp.data;
-      } catch (e) {
-        userData = loggedUser;
-      }
-
-      // Build items (either Buy Now or Cart)
-      let items = [];
-      if (productFromBuyNow) {
-        items = [
-          {
-            productId: productFromBuyNow.id,
-            name: productFromBuyNow.name,
-            price: productFromBuyNow.price,
-            quantity: productFromBuyNow.quantity || 1,
-          },
-        ];
-      } else {
-        if (!cart || cart.length === 0) {
-          toast.warning("Your cart is empty!");
-          return;
-        }
-        items = cart.map((item) => ({
-          productId: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity || 1,
-        }));
-      }
-
-      const newOrder = {
-        id: String(Date.now()),
-        userId: String(loggedUser.id),
-        items,
-        totalAmount: items.reduce((sum, it) => sum + (it.price || 0) * (it.quantity || 1), 0),
-        shippingDetails: formData,
-        orderDate: new Date().toISOString(),
-        status: "Pending",
-      };
-
-      // Create order in /orders
-      try {
-        await axios.post(`${API_BASE}/orders`, newOrder);
-      } catch (err) {
-        console.warn("Warning: could not POST to /orders:", err.message || err);
-      }
-
-      // Update user's order history
-      try {
-        const updatedOrders = [...(userData.orders || []), newOrder];
-        await axios.patch(`${API_BASE}/users/${loggedUser.id}`, {
-          orders: updatedOrders,
-        });
-      } catch (err) {
-        console.warn("Warning: could not update user.orders:", err.message || err);
-      }
-
-      if (!productFromBuyNow && clearCart) clearCart();
-
+      await createOrder({
+        shippingName: formData.name,
+        shippingAddress: formData.address,
+        shippingCity: formData.city,
+        shippingPostalCode: formData.postalCode,
+        shippingPhone: formData.phone,
+      });
+      await clearCart();
       toast.success("Order placed successfully!");
       navigate("/");
     } catch (error) {
       console.error("Error placing order:", error);
       toast.error("Something went wrong while placing the order.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -159,9 +100,10 @@ const PaymentForm = () => {
 
           <button
             onClick={handlePlaceOrder}
-            className="w-full bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700"
+            disabled={loading}
+            className="w-full bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700 disabled:bg-gray-400"
           >
-            Place Order
+            {loading ? "Placing Order..." : "Place Order"}
           </button>
         </div>
       </div>

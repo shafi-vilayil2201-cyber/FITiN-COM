@@ -85,18 +85,18 @@ export const getProductById = async (id) => {
   return handleRequest(api.get(`/products/${encodeURIComponent(id)}`));
 };
 
+//wishlist
 export const getWishlist = async () => {
   return handleRequest(api.get("wishlist"));
 };
-
 export const addToWishlistAPI = async (productId) => {
   return handleRequest(api.post(`wishlist/${encodeURIComponent(productId)}`));
 };
-
 export const removeFromWishlistAPI = async (productId) => {
   return handleRequest(api.delete(`wishlist/${encodeURIComponent(productId)}`));
 };
 
+//cart
 export const getCart = async () => {
   return handleRequest(api.get("cart"));
 };
@@ -113,7 +113,15 @@ export const decreaseCartQtyAPI = async (productId) => {
   return handleRequest(api.patch(`cart/decrease/${encodeURIComponent(productId)}`));
 };
 
-
+export const createOrder = async (shippingDetails) => {
+  return handleRequest(api.post("orders", shippingDetails));
+};
+export const getUserOrders = async () => {
+  return handleRequest(api.get("orders"));
+}
+export const getOrderById = async (orderId) => {
+  return handleRequest(api.get(`orders/${encodeURIComponent(orderId)}`));
+};
 
 
 export default api;
