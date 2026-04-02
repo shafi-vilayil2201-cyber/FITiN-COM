@@ -47,7 +47,7 @@ const Wishlist = () => {
         <div className="space-y-4 max-w-4xl mx-auto">
           {wishList.map((item) => (
             <div
-              key={item.id}
+              key={item.productId || item.id}
               className="flex items-center justify-between bg-white rounded-xl shadow-md px-5 py-4 hover:shadow-lg transition-shadow"
             >
               <div className="flex items-center gap-4">
@@ -66,15 +66,14 @@ const Wishlist = () => {
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => {
-                    addToCart(item);
-                    toast.success("Added to cart!");
+                    addToCart({ ...item, id: item.productId || item.id });
                   }}
                   className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition"
                 >
                   Add to Cart
                 </button>
                 <button
-                  onClick={() => removeFromWishlist(item.id)}
+                  onClick={() => removeFromWishlist(item.productId)}
                   className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
                 >
                   Remove
