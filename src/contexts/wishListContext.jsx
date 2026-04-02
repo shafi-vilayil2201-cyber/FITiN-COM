@@ -35,7 +35,7 @@ export const WishlistProvider = ({ children }) => {
     }
 
     // Avoid duplicates
-    if (wishList.some((item) => item.id === product.id)) {
+    if (wishList.some((item) => item.id === product.id || item.productId === product.id)) {
       toast.info("Item already in wishlist");
       return;
     }
@@ -54,7 +54,7 @@ export const WishlistProvider = ({ children }) => {
     if (!user) return;
     try {
       await removeFromWishlistAPI(productId);
-      setWishlist((prev) => prev.filter((item) => item.id !== productId));
+      setWishlist((prev) => prev.filter((item) => item.id !== productId && item.productId !== productId));
       toast.info("Removed from wishlist");
     } catch (error) {
       toast.error("Failed to remove item");
@@ -63,7 +63,7 @@ export const WishlistProvider = ({ children }) => {
 
   // 4. Helper to check if item is in wishlist
   const isInWishlist = (productId) => {
-    return wishList.some((item) => item.id === productId);
+    return wishList.some((item) => item.id === productId || item.productId === productId);
   };
 
   return (

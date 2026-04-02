@@ -3,11 +3,9 @@ import { CartContext } from "../../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-
 const CartItem = () => {
-  const { cart, removeFromCart, increaseQty, decreaseQty, proceedToBuy, } = useContext(CartContext);
-
-  const navigate = useNavigate()
+  const { cart, removeFromCart, increaseQty, decreaseQty } = useContext(CartContext);
+  const navigate = useNavigate();
 
   if (!cart || cart.length === 0) {
     return (
@@ -18,7 +16,7 @@ const CartItem = () => {
   }
 
   const totalPrice = cart.reduce(
-    (acc, item) => acc + item.price * item.quantity, 0);
+    (acc, item) => acc + (item.productPrice || 0) * (item.quantity || 1), 0);
 
   return (
     <div className="min-h-screen p-6">
@@ -27,29 +25,29 @@ const CartItem = () => {
       <div className="space-y-6">
         {cart.map((item) => (
           <div
-            key={item.id}
+            key={item.productId}
             className="flex items-center justify-between border-b pb-4"
           >
             <div className="flex items-center gap-4">
               <img
-                src={item.imageUrl}
-                alt={item.name}
+                src={item.productImageUrl}
+                alt={item.productName}
                 className="w-20 h-20 object-cover rounded-lg"
               />
               <div>
-                <h2 className="text-lg font-semibold">{item.name}</h2>
-                <p className="text-gray-500">₹{item.price}</p>
+                <h2 className="text-lg font-semibold">{item.productName}</h2>
+                <p className="text-gray-500">₹{item.productPrice}</p>
 
                 <div className="flex items-center gap-2 mt-2">
                   <button
-                    onClick={() => { decreaseQty(item.id); toast.warning("Item quantity decreased"); }}
+                    onClick={() => decreaseQty(item.productId)}
                     className="bg-gray-200 px-2 rounded hover:bg-gray-300"
                   >
                     -
                   </button>
                   <span>{item.quantity}</span>
                   <button
-                    onClick={() => { increaseQty(item.id); toast.success("Item quantity increased"); }}
+                    onClick={() => increaseQty(item.productId)}
                     className="bg-gray-200 px-2 rounded hover:bg-gray-300"
                   >
                     +
@@ -60,10 +58,10 @@ const CartItem = () => {
 
             <div className="flex flex-col items-end">
               <p className="font-semibold text-emerald-600">
-                ₹{item.price * item.quantity}
+                ₹{(item.productPrice || 0) * (item.quantity || 1)}
               </p>
               <button
-                onClick={() => { removeFromCart(item.id); toast.info("Item removed from cart"); }}
+                onClick={() => removeFromCart(item.productId)}
                 className="text-red-500 hover:text-red-700 mt-2 text-sm"
               >
                 Remove
