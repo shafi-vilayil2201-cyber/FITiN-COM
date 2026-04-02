@@ -5,30 +5,24 @@ import { CartContext } from "../../contexts/CartContext.jsx";
 import { WishlistContext } from '../../contexts/wishListContext.jsx'
 import "../../../src/App.css";
 
-const ProductDetails = () =>
-{
+const ProductDetails = () => {
   const { id } = useParams();
   const [details, setDetails] = useState(null);
   const [pending, setPending] = useState(true);
-  const { addToCart } = useContext(CartContext);
-  const { addToWishlist } = useContext(WishlistContext);
+  const { addToCart, isInCart } = useContext(CartContext);
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useContext(WishlistContext);
   const navigate = useNavigate();
 
-  useEffect(() =>
-  {
-    const fetchProduct = async () =>
-    {
+  useEffect(() => {
+    const fetchProduct = async () => {
       setPending(true);
-      try
-      {
+      try {
         const data = await getAllProducts();
         const product = data.find((item) => String(item.id) === id);
         setDetails(product);
-      } catch (error)
-      {
+      } catch (error) {
         console.error("Error fetching product details:", error);
-      } finally
-      {
+      } finally {
         setPending(false);
       }
     };
@@ -36,8 +30,7 @@ const ProductDetails = () =>
   }, [id]);
 
 
-  if (pending)
-  {
+  if (pending) {
     return (
       <div className="flex justify-center items-center h-screen text-lg text-gray-600">
         Loading product details...
@@ -46,8 +39,7 @@ const ProductDetails = () =>
   }
 
 
-  if (!details)
-  {
+  if (!details) {
     return (
       <div className="flex justify-center items-center h-screen text-lg text-red-500">
         Product not found!
@@ -117,13 +109,12 @@ const ProductDetails = () =>
 
           <div className="flex gap-4">
             <button
-              onClick={() => {
-                console.log("Adding to cart:", details);
-                addToCart(details);
-              }}
-              className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition duration-300"
-            >
-              Add to Cart
+              onClick={() => addToCart(details)}
+              className={`px-6 py-2 rounded-lg transition duration-300 ${isInCart(details.id)
+                ? "bg-gray-400 text-white cursor-default"
+                : "bg-emerald-600 text-white hover:bg-emerald-700"
+                }`}>
+              {isInCart(details.id) ? "✓ In Cart" : "Add to Cart"}
             </button>
             <button
               onClick={() => navigate("/checkout", { state: { product: details } })}
@@ -132,9 +123,12 @@ const ProductDetails = () =>
               Buy now
             </button>
             <button
-              onClick={() => addToWishlist(details)}
-              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition duration-300">
-              Add to Wishlist
+              onClick={() => isInWishlist(details.id) ? removeFromWishlist(details.id) : addToWishlist(details)}
+              className={`px-6 py-2 rounded-lg transition duration-300 ${isInWishlist(details.id)
+                ? "bg-red-500 text-white hover:bg-red-600"
+                : "bg-purple-600 text-white hover:bg-purple-700"
+                }`}>
+              {isInWishlist(details.id) ? "♥ In Wishlist" : "Add to Wishlist"}
             </button>
           </div>
         </div>
