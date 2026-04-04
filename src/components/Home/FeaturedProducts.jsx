@@ -31,8 +31,8 @@ const FeaturedProducts = () => {
   }
 
 
-  const handleBuyNow = (productId) => {
-    navigate(`/products/${productId}`);
+  const handleBuyNow = (product) => {
+    navigate("/checkout", { state: { product } });
   };
 
   return (
@@ -62,12 +62,28 @@ const FeaturedProducts = () => {
               <h2 className="text-lg font-semibold text-gray-800">
                 {product.name}
               </h2>
-              <p className="text-gray-500 mt-1">
-                Rs {product.price || "N/A"}
-              </p>
+              <div className="flex flex-col items-center mt-1">
+                {product.discount > 0 ? (
+                  <>
+                    <p className="text-emerald-600 font-bold">
+                      Rs {(product.price - (product.price * product.discount / 100)).toLocaleString("en-IN")}
+                    </p>
+                    <p className="text-gray-400 text-xs line-through">
+                      Rs {product.price.toLocaleString("en-IN")}
+                    </p>
+                    <span className="mt-2 bg-rose-50 text-rose-600 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
+                      SAVE {product.discount}%
+                    </span>
+                  </>
+                ) : (
+                  <p className="text-gray-500">
+                    Rs {product.price?.toLocaleString("en-IN") || "N/A"}
+                  </p>
+                )}
+              </div>
 
               <button
-                onClick={() => handleBuyNow(product.id)}
+                onClick={() => handleBuyNow(product)}
                 className="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
               >
                 Buy Now

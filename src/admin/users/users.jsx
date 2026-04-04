@@ -11,6 +11,7 @@ import {
   FaChevronRight,
   FaShieldAlt
 } from "react-icons/fa";
+import { AuthContext, useAuth } from "../../contexts/AuthContext";
 import { adminGetUsers, adminBlockUser, adminUnblockUser, adminGetUserDetails } from '../../services/api';
 
 const PAGE_SIZE = 8;
@@ -232,19 +233,39 @@ export default function UsersAdmin() {
 
                 <div className="space-y-3">
                   <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest px-2">Account Actions</h4>
-                  <button
-                    onClick={() => handleToggleBlock(selectedUser)}
-                    disabled={updatingId === selectedUser.id}
-                    className={`w-full py-4 px-6 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-3 shadow-lg
-                      ${!selectedUser.isActive
-                        ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
-                        : 'bg-rose-500 text-white hover:bg-rose-600 shadow-rose-500/20'
-                      }
-                    `}
-                  >
-                    {!selectedUser.isActive ? <FaUserCheck /> : <FaUserAltSlash />}
-                    {updatingId === selectedUser.id ? 'Processing...' : (!selectedUser.isActive ? 'Unblock User' : 'Block User')}
-                  </button>
+                  {(() => {
+                    const { user: currentUser } = useAuth();
+                    const isSelf = selectedUser.id === currentUser?.id;
+                    const isAdmin = selectedUser.role === 2 || String(selectedUser.role).toLowerCase() === 'admin';
+                    const canBlock = !isSelf && !isAdmin;
+
+                    return (
+                      <button
+                        onClick={() => handleToggleBlock(selectedUser)}
+                        disabled={updatingId === selectedUser.id || (selectedUser.isActive && !canBlock)}
+                        className={`w-full py-4 px-6 rounded-2xl font-black text-sm transition-all flex flex-col items-center justify-center gap-1 shadow-lg
+                          ${!selectedUser.isActive
+                            ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
+                            : canBlock
+                              ? 'bg-rose-500 text-white hover:bg-rose-600 shadow-rose-500/20'
+                              : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none border-2 border-slate-100'
+                          }
+                        `}
+                      >
+                        <div className="flex items-center gap-3">
+                          {!selectedUser.isActive ? <FaUserCheck /> : <FaUserAltSlash />}
+                          <span>
+                            {updatingId === selectedUser.id ? 'Processing...' : (!selectedUser.isActive ? 'Unblock User' : 'Block User')}
+                          </span>
+                        </div>
+                        {selectedUser.isActive && !canBlock && (
+                          <span className="text-[9px] uppercase tracking-tighter opacity-80">
+                            {isSelf ? "(You cannot block yourself)" : "(Admins cannot be blocked)"}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })()}
                 </div>
 
                 <div className="pt-6 border-t border-slate-50">
