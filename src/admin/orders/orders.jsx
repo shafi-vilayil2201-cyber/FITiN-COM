@@ -169,6 +169,10 @@ export default function OrdersAdmin() {
                 <div>
                   <h3 className="text-2xl font-black text-slate-900">Order Details</h3>
                   <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">#{selectedOrder.orderId}</p>
+                  <p className="text-slate-400 text-[10px] font-black uppercase mt-1 bg-slate-50 inline-block px-2 py-0.5 rounded-md border border-slate-100">
+                    Placed on: {new Date(selectedOrder.orderDate || selectedOrder.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+
                 </div>
                 <button onClick={() => setSelectedOrder(null)} className="md:hidden p-2 text-slate-400">
                   <FaTimes />
@@ -181,8 +185,16 @@ export default function OrdersAdmin() {
                     <FaUser />
                     <span className="text-xs font-black uppercase tracking-widest">Customer Info</span>
                   </div>
-                  <p className="font-bold text-slate-900">{selectedOrder.userName || selectedOrder.customer}</p>
-                  <p className="text-sm text-slate-500">{selectedOrder.shippingAddress || "No address provided"}</p>
+                  <p className="font-bold text-slate-900">{selectedOrder.userName || selectedOrder.shippingName || "Customer"}</p>
+                  <div className="text-sm text-slate-500 mt-1 space-y-0.5">
+                    <p>{selectedOrder.shippingAddress || "No address provided"}</p>
+                    {(selectedOrder.shippingCity || selectedOrder.shippingPostalCode) && (
+                      <p>{selectedOrder.shippingCity}{selectedOrder.shippingCity && selectedOrder.shippingPostalCode ? ', ' : ''}{selectedOrder.shippingPostalCode}</p>
+                    )}
+                    {selectedOrder.shippingPhone && (
+                      <p className="text-xs font-medium text-slate-400 mt-1">📞 {selectedOrder.shippingPhone}</p>
+                    )}
+                  </div>
                 </div>
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                   <div className="flex items-center gap-3 mb-2 text-emerald-600">

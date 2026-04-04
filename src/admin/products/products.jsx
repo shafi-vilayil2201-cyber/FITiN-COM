@@ -43,6 +43,7 @@ export default function ProductsAdmin() {
     stock: "0",
     rating: "5",
     imageUrl: "",
+    description: "",
     shortDescription: "",
     longDescription: "",
   };
@@ -219,7 +220,15 @@ export default function ProductsAdmin() {
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => { setEditingProduct(product); setForm({ ...product, categoryId: product.categoryId }); setPanelOpen(true); }}
+                        onClick={() => { 
+                          setEditingProduct(product); 
+                          setForm({ 
+                            ...product, 
+                            categoryId: product.categoryId,
+                            description: product.description || product.shortDescription || ""
+                          }); 
+                          setPanelOpen(true); 
+                        }}
                         className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
                       >
                         <FaEdit />
@@ -346,7 +355,7 @@ export default function ProductsAdmin() {
                   <input
                     type="text"
                     value={form.shortDescription}
-                    onChange={(e) => setForm({ ...form, shortDescription: e.target.value })}
+                    onChange={(e) => setForm({ ...form, shortDescription: e.target.value, description: e.target.value })}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none text-sm font-medium"
                   />
                 </div>

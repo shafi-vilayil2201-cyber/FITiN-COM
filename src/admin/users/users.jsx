@@ -11,7 +11,7 @@ import {
   FaChevronRight,
   FaShieldAlt
 } from "react-icons/fa";
-import { adminGetUsers, adminBlockUser, adminUnblockUser } from '../../services/api';
+import { adminGetUsers, adminBlockUser, adminUnblockUser, adminGetUserDetails } from '../../services/api';
 
 const PAGE_SIZE = 8;
 
@@ -22,6 +22,7 @@ export default function UsersAdmin() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [page, setPage] = useState(1);
   const [updatingId, setUpdatingId] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -60,6 +61,20 @@ export default function UsersAdmin() {
       toast.error("Failed to update user status");
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const handleSelectUser = async (user) => {
+    setSelectedUser(user);
+    setDetailsLoading(true);
+    try {
+      const details = await adminGetUserDetails(user.id);
+      setSelectedUser(details);
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not load full user profile");
+    } finally {
+      setDetailsLoading(false);
     }
   };
 
@@ -126,7 +141,7 @@ export default function UsersAdmin() {
                   ) : paginatedUsers.map((user) => (
                     <tr
                       key={user.id}
-                      onClick={() => setSelectedUser(user)}
+                      onClick={() => handleSelectUser(user)}
                       className={`hover:bg-slate-50/50 transition-colors cursor-pointer group ${selectedUser?.id === user.id ? 'bg-emerald-50/30' : ''}`}
                     >
                       <td className="px-6 py-4">
@@ -141,8 +156,11 @@ export default function UsersAdmin() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter shadow-xs border ${user.role === 'admin' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-slate-50 text-slate-600 border-slate-100'}`}>
-                          {user.role || 'user'}
+                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter shadow-xs border 
+                          ${(String(user.role).toLowerCase() === 'admin' || user.role === 2)
+                            ? 'bg-indigo-50 text-indigo-600 border-indigo-100'
+                            : 'bg-slate-50 text-slate-600 border-slate-100'}`}>
+                          {user.role === 2 || String(user.role).toLowerCase() === 'admin' ? 'Admin' : 'User'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
@@ -204,11 +222,11 @@ export default function UsersAdmin() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Orders</p>
-                    <p className="text-xl font-black text-slate-900">{(selectedUser.orders || []).length}</p>
+                    <p className="text-xl font-black text-slate-900">{detailsLoading ? '...' : (selectedUser.orders || []).length}</p>
                   </div>
                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Items in Cart</p>
-                    <p className="text-xl font-black text-slate-900">{(selectedUser.cart || []).length}</p>
+                    <p className="text-xl font-black text-slate-900">{detailsLoading ? '...' : (selectedUser.cartItemCount || 0)}</p>
                   </div>
                 </div>
 
