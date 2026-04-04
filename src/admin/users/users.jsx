@@ -1,349 +1,274 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { toast } from "react-toastify";
+import {
+  FaSearch,
+  FaUserShield,
+  FaUserCheck,
+  FaUserAltSlash,
+  FaEye,
+  FaSyncAlt,
+  FaChevronLeft,
+  FaChevronRight,
+  FaShieldAlt
+} from "react-icons/fa";
+import { adminGetUsers, adminBlockUser, adminUnblockUser, adminGetUserDetails } from '../../services/api';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 8;
 
-/* Environment-based backend URL */
-import { API_BASE } from '../../services/api';
-
-export default function Users() {
+export default function UsersAdmin() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [selected, setSelected] = useState(null);
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
   const [page, setPage] = useState(1);
   const [updatingId, setUpdatingId] = useState(null);
-  const [deletingId, setDeletingId] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  async function loadUsers() {
-    setLoading(true);
-    setError("");
+  const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/users`);
-      if (!res.ok) throw new Error("Failed to fetch users");
-      const data = await res.json();
+      setLoading(true);
+      const data = await adminGetUsers();
       setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
-      setError("Unable to load users. Check server or network.");
-      setUsers([]);
+      toast.error("Failed to fetch users");
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  const filtered = users.filter((u) => {
-    if (!search) return true;
-    const s = search.toLowerCase();
-    return (
-      (u.name && u.name.toLowerCase().includes(s)) ||
-      (u.email && u.email.toLowerCase().includes(s)) ||
-      (u.id && String(u.id).toLowerCase().includes(s))
-    );
-  });
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  const selectUser = (u) => {
-    setSelected(u);
-  };
-
-  const toggleBlock = async (user) => {
-    if (!user || !user.id) return;
-
-    const newBlock = !user?.isBlock;
-    if (!window.confirm(`${newBlock ? "Block" : "Unblock"} user ${user.name || user.email}?`)) return;
-
+  const handleToggleBlock = async (user) => {
+    const willBeBlocked = user.isActive; // If currently active, it will be blocked
     setUpdatingId(user.id);
     try {
-      const res = await fetch(`${API_BASE}/users/${encodeURIComponent(user.id)}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isBlock: newBlock }),
-      });
-      if (!res.ok) throw new Error("Failed to update user");
-      const updatedUser = await res.json();
-
-      setUsers((prev) =>
-        prev.map((p) =>
-          String(p.id) === String(updatedUser.id || user.id)
-            ? { ...p, ...(updatedUser || { isBlock: newBlock }) }
-            : p
-        )
-      );
-
-      if (selected && String(selected.id) === String(updatedUser.id || user.id)) {
-        setSelected((prevSelected) => ({
-          ...prevSelected,
-          ...(updatedUser || { isBlock: newBlock }),
-        }));
+      if (willBeBlocked) {
+        await adminBlockUser(user.id);
+      } else {
+        await adminUnblockUser(user.id);
       }
+
+      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, isActive: !willBeBlocked } : u));
+      if (selectedUser?.id === user.id) {
+        setSelectedUser(prev => ({ ...prev, isActive: !willBeBlocked }));
+      }
+      toast.success(`User ${willBeBlocked ? 'blocked' : 'unblocked'}`);
     } catch (err) {
       console.error(err);
-      alert("Could not update user — check console");
+      toast.error("Failed to update user status");
     } finally {
       setUpdatingId(null);
     }
   };
 
-  const refresh = () => {
-    setPage(1);
-    loadUsers();
+  const handleSelectUser = async (user) => {
+    setSelectedUser(user);
+    setDetailsLoading(true);
+    try {
+      const details = await adminGetUserDetails(user.id);
+      setSelectedUser(details);
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not load full user profile");
+    } finally {
+      setDetailsLoading(false);
+    }
   };
 
+  const filtered = users.filter(u =>
+    (u.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (u.email || "").toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginatedUsers = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <div className="lg:col-span-8 space-y-4">
-        <header className="flex items-start justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-slate-800">Users</h2>
-            <p className="text-sm text-slate-500">Manage and moderate users</p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={refresh}
-              className="px-3 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 shadow"
-              type="button"
-            >
-              Refresh
-            </button>
-          </div>
-        </header>
-
-        <div className="bg-white rounded-2xl p-4 border border-emerald-100/20 bg-linear-to-b from-emerald-100 to-white group transition-all duration-200 shadow-xl">
-          <div className="flex items-center gap-3 mb-4">
+    <div className="space-y-6 animate-in fade-in duration-500">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Users</h1>
+          <p className="text-slate-500 font-medium">Manage and moderate your community</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="relative group">
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
             <input
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Search by name, email or id..."
-              className="flex-1 px-3 py-2 rounded-md border focus:outline-none focus:ring-2 focus:ring-emerald-200"
+              type="text"
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+              className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none w-64"
             />
           </div>
-
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm shadow-xl border-emerald-100/20 bg-linear-to-b from-emerald-100 to-white group">
-              <thead className="bg-slate-50 ">
-                <tr>
-                  <th className="px-4 py-3 text-left text-slate-600">#</th>
-                  <th className="px-4 py-3 text-left text-slate-600">Name</th>
-                  <th className="px-4 py-3 text-left text-slate-600">Role</th>
-                  <th className="px-4 py-3 text-left text-slate-600">Status</th>
-                  <th className="px-4 py-3 text-right text-slate-600">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan="6" className="px-4 py-8 text-center text-slate-500">
-                      Loading users...
-                    </td>
-                  </tr>
-                ) : error ? (
-                  <tr>
-                    <td colSpan="6" className="px-4 py-8 text-center text-red-600">
-                      {error}
-                    </td>
-                  </tr>
-                ) : filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" className="px-4 py-8 text-center text-slate-500">
-                      No users found
-                    </td>
-                  </tr>
-                ) : (
-                  pageItems.map((u, idx) => (
-                    <tr
-                      key={u.id}
-                      className="odd:bg-white even:bg-slate-50 hover:bg-white/80 hover:shadow-md transition-all duration-150"
-                      onClick={() => {
-                        selectUser(u);
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }}
-                    >
-                      <td className="px-4 py-3">{(page - 1) * PAGE_SIZE + idx + 1}</td>
-                      <td className="px-4 py-3">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            selectUser(u);
-                            window.scrollTo({ top: 0, behavior: "smooth" });
-                          }}
-                          className="text-slate-800 font-medium hover:underline"
-                        >
-                          {u.name || "—"}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3">{u.role || "user"}</td>
-                      <td className="px-4 py-3">
-                        {u.isBlock ? (
-                          <span className="text-xs px-2 py-1 rounded-full bg-red-50 text-red-700">Blocked</span>
-                        ) : (
-                          <span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">Active</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleBlock(u);
-                            }}
-                            disabled={updatingId === u.id}
-                            className="px-2 py-1 text-sm rounded-md border hover:bg-slate-50"
-                          >
-                            {updatingId === u.id ? "Updating..." : u.isBlock ? "Unblock" : "Block"}
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              selectUser(u);
-                              window.scrollTo({ top: 0, behavior: "smooth" });
-                            }}
-                            className="px-2 py-1 text-sm rounded-md border hover:bg-slate-50"
-                          >
-                            View
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {filtered.length > PAGE_SIZE && (
-            <div className="mt-4 flex items-center justify-between">
-              <div className="text-sm text-slate-500">
-                Showing {(page - 1) * PAGE_SIZE + 1} - {Math.min(page * PAGE_SIZE, filtered.length)} of{" "}
-                {filtered.length}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="px-3 py-1 rounded-md border hover:bg-slate-50 disabled:opacity-50"
-                  type="button"
-                >
-                  Prev
-                </button>
-                <div className="text-sm px-3">
-                  {page} / {totalPages}
-                </div>
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="px-3 py-1 rounded-md border hover:bg-slate-50 disabled:opacity-50"
-                  type="button"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
+          <button
+            onClick={fetchUsers}
+            className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-emerald-600 hover:border-emerald-100 hover:bg-emerald-50 transition-all shadow-sm"
+          >
+            <FaSyncAlt className={loading ? "animate-spin" : ""} />
+          </button>
         </div>
       </div>
 
-      <aside className="lg:col-span-4">
-        <div className="sticky top-6 space-y-4">
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100/20 bg-linear-to-b from-emerald-200 to-emerald-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm text-slate-500">Selected User</div>
-                <div className="font-medium text-slate-800">{selected?.name || "No user selected"}</div>
-                <div className="text-xs text-slate-400">{selected?.email || ""}</div>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-linear-to-r from-emerald-400 to-emerald-600 text-white flex items-center justify-center font-semibold">
-                {selected?.name ? selected.name.charAt(0).toUpperCase() : "U"}
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Users List */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/50 border-b border-slate-100">
+                    <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">User</th>
+                    <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Role</th>
+                    <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
+                    <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {loading ? (
+                    [1, 2, 3, 4].map(i => (
+                      <tr key={i} className="animate-pulse">
+                        <td className="px-6 py-6"><div className="h-10 bg-slate-100 rounded-full w-40"></div></td>
+                        <td className="px-6 py-6"><div className="h-4 bg-slate-100 rounded w-16"></div></td>
+                        <td className="px-6 py-6"><div className="h-6 bg-slate-100 rounded-full w-20 mx-auto"></div></td>
+                        <td className="px-6 py-6"><div className="h-8 bg-slate-100 rounded-lg w-20 ml-auto"></div></td>
+                      </tr>
+                    ))
+                  ) : paginatedUsers.map((user) => (
+                    <tr
+                      key={user.id}
+                      onClick={() => handleSelectUser(user)}
+                      className={`hover:bg-slate-50/50 transition-colors cursor-pointer group ${selectedUser?.id === user.id ? 'bg-emerald-50/30' : ''}`}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-linear-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-500 font-bold border border-white shadow-sm">
+                            {(user.name || user.email || "U").charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-900 leading-none mb-1">{user.name || "Customer"}</p>
+                            <p className="text-xs text-slate-400 font-medium">{user.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter shadow-xs border 
+                          ${(String(user.role).toLowerCase() === 'admin' || user.role === 2)
+                            ? 'bg-indigo-50 text-indigo-600 border-indigo-100'
+                            : 'bg-slate-50 text-slate-600 border-slate-100'}`}>
+                          {user.role === 2 || String(user.role).toLowerCase() === 'admin' ? 'Admin' : 'User'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-transparent shadow-sm ${!user.isActive ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+                          {!user.isActive ? 'Blocked' : 'Active'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="p-2 text-slate-300 group-hover:text-emerald-500 transition-colors">
+                          <FaEye />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
-            {selected ? (
-              <>
-                <div className="mt-4 text-sm text-slate-500">
-                  <div>
-                    Role: <span className="font-medium text-slate-700">{selected.role || "user"}</span>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+                <p className="text-xs font-bold text-slate-400">
+                  Page {page} of {totalPages}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={page === 1}
+                    onClick={() => setPage(p => p - 1)}
+                    className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-emerald-600 disabled:opacity-50 transition-all shadow-xs"
+                  >
+                    <FaChevronLeft size={12} />
+                  </button>
+                  <button
+                    disabled={page === totalPages}
+                    onClick={() => setPage(p => p + 1)}
+                    className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-emerald-600 disabled:opacity-50 transition-all shadow-xs"
+                  >
+                    <FaChevronRight size={12} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* User Sidebar / Details */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-24">
+            {selectedUser ? (
+              <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-6 animate-in slide-in-from-right-4 duration-300">
+                <div className="text-center relative">
+                  <div className="w-24 h-24 rounded-3xl bg-linear-to-br from-emerald-400 to-teal-500 mx-auto flex items-center justify-center text-white text-3xl font-black shadow-xl shadow-emerald-500/20 border-4 border-white mb-4">
+                    {(selectedUser.name || "U").charAt(0).toUpperCase()}
                   </div>
-                  <div className="mt-2">
-                    Blocked: <span className="font-medium">{selected.isBlock ? "Yes" : "No"}</span>
+                  <h3 className="text-xl font-black text-slate-900">{selectedUser.name || "Customer"}</h3>
+                  <p className="text-slate-400 text-sm font-medium">{selectedUser.email}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Orders</p>
+                    <p className="text-xl font-black text-slate-900">{detailsLoading ? '...' : (selectedUser.orders || []).length}</p>
                   </div>
-                  <div className="mt-2 text-xs">
-                    ID: <span className="text-slate-600">{selected.id}</span>
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Items in Cart</p>
+                    <p className="text-xl font-black text-slate-900">{detailsLoading ? '...' : (selectedUser.cartItemCount || 0)}</p>
                   </div>
                 </div>
 
-                <div className="mt-4 flex gap-2">
+                <div className="space-y-3">
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest px-2">Account Actions</h4>
                   <button
-                    onClick={() => toggleBlock(selected)}
-                    disabled={updatingId === selected.id}
-                    className="flex-1 px-3 py-2 rounded-full bg-red-500 text-white hover:bg-red-700 disabled:opacity-60"
-                    type="button"
+                    onClick={() => handleToggleBlock(selectedUser)}
+                    disabled={updatingId === selectedUser.id}
+                    className={`w-full py-4 px-6 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-3 shadow-lg
+                      ${!selectedUser.isActive
+                        ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20'
+                        : 'bg-rose-500 text-white hover:bg-rose-600 shadow-rose-500/20'
+                      }
+                    `}
                   >
-                    {selected.isBlock ? "Unblock user" : "Block user"}
+                    {!selectedUser.isActive ? <FaUserCheck /> : <FaUserAltSlash />}
+                    {updatingId === selectedUser.id ? 'Processing...' : (!selectedUser.isActive ? 'Unblock User' : 'Block User')}
                   </button>
                 </div>
 
-                <div className="mt-4 text-sm">
-                  <div className="font-medium text-slate-800 mb-2">Summary</div>
-                  <div className="text-slate-500">
-                    Orders:{" "}
-                    <span className="font-semibold text-slate-700">
-                      {(selected.orders || []).length}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-slate-500">
-                    Cart items:{" "}
-                    <span className="font-semibold text-slate-700">
-                      {(selected.cart || []).length}
-                    </span>
+                <div className="pt-6 border-t border-slate-50">
+                  <div className="flex items-start gap-3 p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                    <FaShieldAlt className="text-slate-400 mt-1" />
+                    <div>
+                      <p className="text-xs font-bold text-slate-600">ID Verification</p>
+                      <p className="text-[10px] text-slate-400 font-medium">#{selectedUser.id}</p>
+                    </div>
                   </div>
                 </div>
-              </>
+              </div>
             ) : (
-              <>
-                <div className="mt-4 text-sm text-slate-500">
-                  Select a user from the list to view details, block/unblock or delete.
+              <div className="bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 p-12 text-center">
+                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-slate-300 mx-auto mb-4 shadow-sm">
+                  <FaUserShield size={24} />
                 </div>
-
-                <button
-                  onClick={() => loadUsers()}
-                  className="mt-4 w-full py-2 rounded-full bg-linear-to-r from-emerald-400 to-emerald-600 text-white text-sm font-medium shadow"
-                  type="button"
-                >
-                  Refresh users
-                </button>
-              </>
+                <h3 className="text-slate-900 font-black mb-1">Select User</h3>
+                <p className="text-slate-500 text-sm font-medium">Click on a user from the list to view their details and moderate account permissions.</p>
+              </div>
             )}
           </div>
-
-          <div className="bg-white rounded-2xl p-4 shadow-sm border text-sm text-slate-500 border-emerald-100/20 bg-linear-to-b from-emerald-200 to-emerald-100">
-            <div className="font-medium text-slate-800">Quick Stats</div>
-            <div className="mt-2">
-              Total users:{" "}
-              <span className="font-semibold text-slate-700">{users.length}</span>
-            </div>
-            <div className="mt-1">
-              Blocked:{" "}
-              <span className="font-semibold">{users.filter((u) => u.isBlock).length}</span>
-            </div>
-          </div>
         </div>
-      </aside>
+      </div>
     </div>
   );
 }

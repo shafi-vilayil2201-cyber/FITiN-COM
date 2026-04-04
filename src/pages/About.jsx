@@ -12,7 +12,7 @@ const About = () => {
         FitN is your ultimate fitness companion. Our mission is to help you stay healthy, motivated, and consistent with your fitness goals. Whether you’re a beginner or a fitness enthusiast, we provide tools and guidance to make your journey enjoyable and effective.
       </p>
 
-      
+
       <div className="grid md:grid-cols-3 gap-8 text-center w-full max-w-5xl">
         <div className="bg-white p-8 rounded-xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer">
           <FaRunning className="mx-auto text-blue-500 text-6xl mb-4 animate-pulse" />
@@ -21,7 +21,7 @@ const About = () => {
         </div>
 
         <div className="bg-white p-8 rounded-xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer">
-          <FaDumbbell className="mx-auto text-green-500 text-6xl mb-4 animate-bounce" />
+          <FaDumbbell className="mx-auto text-green-500 text-6xl mb-4 " />
           <h2 className="text-2xl font-bold mb-2 text-gray-800">Personalized Plans</h2>
           <p className="text-gray-600">Receive workout plans tailored to your goals and fitness level.</p>
         </div>
