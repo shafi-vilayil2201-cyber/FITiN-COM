@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { CartContext } from "../../contexts/CartContext";
 import { toast } from "react-toastify";
 import { createOrder } from "../../services/api";
@@ -30,9 +30,42 @@ const PaymentForm = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { cart, clearCart } = useContext(CartContext);
 
-  const cartTotal = cart?.reduce((sum, item) => sum + (item.productPrice * item.quantity), 0) || 0;
+  // Check if we are in "Direct Purchase" mode (from a 'Buy Now' button)
+  const isDirectPurchase = !!location.state?.product;
+  const directProduct = location.state?.product;
+
+  const calculateDiscountedPrice = (price, discount) => {
+    if (!discount || discount <= 0) return price;
+    return price - (price * discount) / 100;
+  };
+
+  const checkoutItems = isDirectPurchase
+    ? [{
+      productId: directProduct.id,
+      productName: directProduct.name,
+      productPrice: directProduct.price,
+      discount: directProduct.discount || 0,
+      quantity: 1,
+      imageUrl: directProduct.imageUrl
+    }]
+    : (cart || []);
+
+  const totals = checkoutItems.reduce((acc, item) => {
+    const originalPrice = (item.productPrice || item.price || 0);
+    const discount = (item.discount || 0);
+    const discountedPrice = calculateDiscountedPrice(originalPrice, discount);
+    const qty = (item.quantity || 1);
+
+    acc.original += originalPrice * qty;
+    acc.discounted += discountedPrice * qty;
+    return acc;
+  }, { original: 0, discounted: 0 });
+
+  const cartTotal = totals.discounted;
+  const totalSavings = totals.original - totals.discounted;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -71,8 +104,13 @@ const PaymentForm = () => {
         shippingCity: formData.city,
         shippingPostalCode: formData.postalCode,
         shippingPhone: formData.phone,
+        productId: isDirectPurchase ? directProduct.id : null,
+        quantity: isDirectPurchase ? 1 : null,
+        totalAmount: cartTotal // Adding totalAmount to the payload
       });
-      await clearCart();
+      if (!isDirectPurchase) {
+        await clearCart();
+      }
       toast.success("Payment Received & Order Placed!");
       setShowGateway(false);
       navigate("/");
@@ -238,27 +276,44 @@ const PaymentForm = () => {
                 <h2 className="text-xl font-black text-slate-900">Order Summary</h2>
               </div>
 
-              {cart && cart.length > 0 ? (
+              {checkoutItems.length > 0 ? (
                 <>
                   <div className="space-y-4 max-h-64 overflow-y-auto mb-6 pr-2 custom-scrollbar">
-                    {cart.map((item) => (
-                      <div key={item.productId} className="flex justify-between items-center text-sm py-1">
-                        <div className="flex-1 min-w-0 pr-4">
-                          <p className="font-bold text-slate-900 truncate">{item.productName}</p>
-                          <p className="text-[10px] text-slate-400 font-black uppercase">Qty: {item.quantity}</p>
+                    {checkoutItems.map((item) => {
+                      const originalPrice = (item.productPrice || item.price || 0);
+                      const discountedPrice = calculateDiscountedPrice(originalPrice, item.discount || 0);
+                      return (
+                        <div key={item.productId} className="flex justify-between items-center text-sm py-1">
+                          <div className="flex-1 min-w-0 pr-4">
+                            <p className="font-bold text-slate-900 truncate">{item.productName}</p>
+                            <p className="text-[10px] text-slate-400 font-black uppercase">Qty: {item.quantity}</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-black text-slate-900 block">
+                              ₹{(discountedPrice * item.quantity).toLocaleString("en-IN")}
+                            </span>
+                            {item.discount > 0 && (
+                              <span className="text-[10px] text-slate-400 line-through">
+                                ₹{(originalPrice * item.quantity).toLocaleString("en-IN")}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <span className="font-black text-slate-900 whitespace-nowrap">
-                          ₹{(item.productPrice * item.quantity).toLocaleString("en-IN")}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <div className="border-t border-slate-100 pt-6 space-y-3">
                     <div className="flex justify-between text-sm font-bold text-slate-500">
                       <span>Subtotal</span>
-                      <span>₹{cartTotal.toLocaleString("en-IN")}</span>
+                      <span>₹{totals.original.toLocaleString("en-IN")}</span>
                     </div>
+                    {totalSavings > 0 && (
+                      <div className="flex justify-between text-sm font-bold text-rose-500 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-100 items-baseline">
+                        <span className="text-[10px] uppercase tracking-widest font-black">Discount Savings</span>
+                        <span className="font-black">-₹{totalSavings.toLocaleString("en-IN")}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-sm font-bold text-slate-500">
                       <span>Shipping</span>
                       <span className="text-emerald-600 uppercase tracking-widest text-[10px]">Free</span>

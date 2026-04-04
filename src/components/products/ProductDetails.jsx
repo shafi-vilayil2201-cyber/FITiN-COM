@@ -72,8 +72,24 @@ const ProductDetails = () => {
             Brand: <span className="font-semibold">{details.brand}</span>
           </h2>
           <p className="text-gray-700 mb-4">{details.description}</p>
-          <div className="text-2xl font-semibold text-emerald-600 mb-4">
-            ₹{details.price}
+          <div className="mb-4">
+            {details.discount > 0 ? (
+              <div className="flex items-center gap-3">
+                <span className="text-3xl font-black text-emerald-600">
+                  ₹{(details.price - (details.price * details.discount / 100)).toLocaleString("en-IN")}
+                </span>
+                <span className="text-lg text-gray-400 line-through decoration-rose-500/50 font-bold">
+                  ₹{details.price.toLocaleString("en-IN")}
+                </span>
+                <span className="bg-rose-50 text-rose-600 text-xs font-black px-2 py-1 rounded-lg border border-rose-100">
+                  {details.discount}% OFF
+                </span>
+              </div>
+            ) : (
+              <div className="text-3xl font-black text-emerald-600">
+                ₹{details.price?.toLocaleString("en-IN")}
+              </div>
+            )}
           </div>
           <p className="text-yellow-500 font-medium mb-4">
             ⭐ {details.rating} / 5

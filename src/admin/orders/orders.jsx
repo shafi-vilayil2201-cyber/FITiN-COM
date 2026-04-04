@@ -246,23 +246,55 @@ export default function OrdersAdmin() {
                 <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Manage Order</h4>
 
                 <div className="space-y-3">
-                  {['Pending', 'Processing', 'Delivered', 'Cancelled'].map(status => (
-                    <button
-                      key={status}
-                      disabled={updatingId === selectedOrder.orderId || selectedOrder.status === status}
-                      onClick={() => handleUpdateStatus(selectedOrder.orderId, status)}
-                      className={`w-full py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all text-left flex items-center justify-between group
-                        ${selectedOrder.status === status
-                          ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                          : 'bg-white text-slate-700 hover:bg-emerald-600 hover:text-white shadow-sm'
-                        }
-                      `}
-                    >
-                      <span>{status}</span>
-                      {selectedOrder.status === status && <FaCheckCircle className="text-emerald-500" />}
-                    </button>
-                  ))}
+                  {(() => {
+                    const statusFlow = {
+                      'Pending': ['Processing', 'Cancelled'],
+                      'Processing': ['Delivered', 'Cancelled'],
+                      'Delivered': [],
+                      'Cancelled': []
+                    };
+                    const currentStatus = selectedOrder.status || 'Pending';
+                    const allowedNext = statusFlow[currentStatus] || [];
+                    const isTerminal = allowedNext.length === 0;
+
+                    return ['Pending', 'Processing', 'Delivered', 'Cancelled'].map(status => {
+                      const isCurrent = currentStatus === status;
+                      const isAllowed = allowedNext.includes(status);
+                      const isDisabled = updatingId === selectedOrder.orderId || isCurrent || !isAllowed;
+
+                      return (
+                        <button
+                          key={status}
+                          disabled={isDisabled}
+                          onClick={() => handleUpdateStatus(selectedOrder.orderId, status)}
+                          className={`w-full py-3.5 px-5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all text-left flex items-center justify-between group border-2
+                            ${isCurrent
+                              ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-inner'
+                              : isAllowed
+                                ? 'bg-white border-slate-100 text-slate-700 hover:border-emerald-500 hover:bg-emerald-600 hover:text-white shadow-sm'
+                                : 'bg-slate-50 border-slate-50 text-slate-300 cursor-not-allowed opacity-60'
+                            }
+                          `}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-2 h-2 rounded-full ${isCurrent ? 'bg-emerald-500 animate-pulse' : isAllowed ? 'bg-slate-300 group-hover:bg-white' : 'bg-slate-200'}`} />
+                            <span>{status}</span>
+                          </div>
+                          {isCurrent && <FaCheckCircle className="text-emerald-500" />}
+                        </button>
+                      );
+                    });
+                  })()}
                 </div>
+
+                {['Delivered', 'Cancelled'].includes(selectedOrder.status) && (
+                  <div className="mt-6 p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-3">
+                    <FaExclamationTriangle className="text-amber-500 mt-1 flex-shrink-0" />
+                    <p className="text-[10px] font-bold text-amber-700 leading-relaxed uppercase tracking-tight">
+                      This order is in a terminal state ({selectedOrder.status}). Further status changes are restricted to maintain records.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="pt-8 border-t border-slate-200">
