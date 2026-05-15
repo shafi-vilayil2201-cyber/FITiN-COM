@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { CartContext } from "../../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { IMAGE_BASE_URL } from "../../services/api";
 
 const CartItem = () => {
   const { cart, removeFromCart, increaseQty, decreaseQty } = useContext(CartContext);
@@ -43,7 +44,7 @@ const CartItem = () => {
             >
               <div className="flex items-center gap-4">
                 <img
-                  src={item.productImageUrl}
+                  src={item.productImageUrl ? (item.productImageUrl.startsWith('http') ? item.productImageUrl.replace(':7071', ':5252') : `${IMAGE_BASE_URL}${item.productImageUrl}`) : "https://via.placeholder.com/100"}
                   alt={item.productName}
                   className="w-20 h-20 object-cover rounded-lg"
                 />

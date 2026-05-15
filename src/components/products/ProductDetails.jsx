@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getAllProducts } from "../../services/api.js";
+import { getAllProducts, IMAGE_BASE_URL } from "../../services/api.js";
 import { CartContext } from "../../contexts/CartContext.jsx";
 import { WishlistContext } from '../../contexts/wishListContext.jsx'
 import "../../../src/App.css";
@@ -54,7 +54,7 @@ const ProductDetails = () => {
 
         <div className="md:w-1/2 flex justify-center items-center bg-linear-to-r from-yellow-600 via-yellow-400 to-yellow-600 p-6 animate-shimmer">
           <img
-            src={details.imageUrl ? (details.imageUrl.startsWith('http') ? details.imageUrl : `http://localhost:5252${details.imageUrl}`) : "https://via.placeholder.com/400"}
+            src={details.imageUrl ? (details.imageUrl.startsWith('http') ? details.imageUrl.replace(':7071', ':5252') : `${IMAGE_BASE_URL}${details.imageUrl.replace(':7071', ':5252')}`) : "https://via.placeholder.com/400"}
             alt={details.name}
             className="rounded-xl w-full h-80 object-cover shadow-2xl transition-transform duration-1000
             ease-[cubic-bezier(.13,.8,.5,1.2)] 
@@ -105,7 +105,7 @@ const ProductDetails = () => {
               <span className="font-semibold">Category:</span> {details.categoryName}
             </p>
             <p>
-              <span className="font-semibold">Stock:</span> {details.stock}
+              <span className="font-semibold">Stock:</span> {details.stock > 0 ? details.stock : <span className="text-rose-600 font-black">Out of Stock</span>}
             </p>
             <p>
               <span className="font-semibold">Discount:</span> {details.discount}%
@@ -126,17 +126,24 @@ const ProductDetails = () => {
           <div className="flex gap-4">
             <button
               onClick={() => addToCart(details)}
-              className={`px-6 py-2 rounded-lg transition duration-300 ${isInCart(details.id)
-                ? "bg-gray-400 text-white cursor-default"
-                : "bg-emerald-600 text-white hover:bg-emerald-700"
+              disabled={details.stock <= 0}
+              className={`px-6 py-2 rounded-lg transition duration-300 ${details.stock <= 0
+                ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+                : isInCart(details.id)
+                  ? "bg-slate-200 text-slate-600 cursor-default font-bold"
+                  : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-200 active:scale-95"
                 }`}>
-              {isInCart(details.id) ? "✓ In Cart" : "Add to Cart"}
+              {details.stock <= 0 ? "Sold Out" : isInCart(details.id) ? "✓ In Cart" : "Add to Cart"}
             </button>
             <button
               onClick={() => navigate("/checkout", { state: { product: details } })}
-              className="bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700"
+              disabled={details.stock <= 0}
+              className={`px-6 py-2 rounded-lg transition duration-300 ${details.stock <= 0
+                ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+                : "bg-cyan-600 text-white hover:bg-cyan-700 shadow-lg shadow-cyan-200 active:scale-95"
+                }`}
             >
-              Buy now
+              {details.stock <= 0 ? "Unavailable" : "Buy now"}
             </button>
             <button
               onClick={() => isInWishlist(details.id) ? removeFromWishlist(details.id) : addToWishlist(details)}

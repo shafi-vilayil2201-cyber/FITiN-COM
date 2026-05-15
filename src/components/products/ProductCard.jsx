@@ -85,7 +85,7 @@ const ProductCard = () => {
 
                                 <div className="relative">
                                     <img
-                                        src={product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl : `http://localhost:5252${product.imageUrl}`) : "https://via.placeholder.com/200"}
+                                        src={product.imageUrl ? product.imageUrl.replace(':7071', ':5252') : "https://via.placeholder.com/200"}
                                         alt={product.name}
                                         className="w-full h-52 object-cover rounded-t-2xl"
                                     />

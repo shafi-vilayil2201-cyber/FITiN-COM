@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { WishlistContext } from "../../contexts/wishListContext";
 import { CartContext } from "../../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
+import { IMAGE_BASE_URL } from "../../services/api";
 
 const Wishlist = () => {
   const { wishList, removeFromWishlist, refreshWishlist } = useContext(WishlistContext);
@@ -52,7 +53,7 @@ const Wishlist = () => {
             >
               <div className="flex items-center gap-4">
                 <img
-                  src={item.imageUrl ? (item.imageUrl.startsWith('http') ? item.imageUrl : `http://localhost:5252${item.imageUrl}`) : "/placeholder.png"}
+                  src={item.imageUrl ? (item.imageUrl.startsWith('http') ? item.imageUrl : `${IMAGE_BASE_URL}${item.imageUrl}`) : "/placeholder.png"}
                   alt={item.name}
                   className="w-20 h-20 object-cover rounded-lg border border-amber-100"
                 />
