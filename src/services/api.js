@@ -3,7 +3,7 @@ import axios from "axios";
 const DEFAULT_TIMEOUT = 10_000;
 
 export const API_BASE =
-  import.meta.env.VITE_API_BASE || "http://localhost:5251/api/";
+  import.meta.env.VITE_API_BASE || "http://localhost:5252/api/";
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -65,6 +65,8 @@ export const loginUser = async (email, password) => {
 };
 
 export const getProfile = () => handleRequest(api.get("auth/profile"));
+
+export const logoutUser = () => handleRequest(api.post("auth/logout"));
 
 export const getAllProducts = async () => handleRequest(api.get("products"));
 
@@ -137,5 +139,10 @@ export const adminGetUsers = async () => handleRequest(api.get("users"));
 export const adminGetUserDetails = async (id) => handleRequest(api.get(`users/${encodeURIComponent(id)}`));
 export const adminBlockUser = async (id) => handleRequest(api.patch(`users/${encodeURIComponent(id)}/block`));
 export const adminUnblockUser = async (id) => handleRequest(api.patch(`users/${encodeURIComponent(id)}/unblock`));
+
+// Admin Category Management
+export const adminCreateCategory = async (formData) => handleRequest(api.post("categories", formData));
+export const adminUpdateCategory = async (id, formData) => handleRequest(api.put(`categories/${encodeURIComponent(id)}`, formData));
+export const adminDeleteCategory = async (id) => handleRequest(api.delete(`categories/${encodeURIComponent(id)}`));
 
 export default api;

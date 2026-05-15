@@ -10,7 +10,8 @@ import {
   FaTimes,
   FaUser,
   FaChartBar,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaLayerGroup
 } from "react-icons/fa";
 
 export default function AdminLayout() {
@@ -20,6 +21,7 @@ export default function AdminLayout() {
   const navItems = [
     { to: "/admin/dashboard", label: "Dashboard", icon: <FaChartBar /> },
     { to: "/admin/products", label: "Products", icon: <FaBoxOpen /> },
+    { to: "/admin/categories", label: "Categories", icon: <FaLayerGroup /> },
     { to: "/admin/orders", label: "Orders", icon: <FaShoppingCart /> },
     { to: "/admin/users", label: "Users", icon: <FaUser /> },
   ];

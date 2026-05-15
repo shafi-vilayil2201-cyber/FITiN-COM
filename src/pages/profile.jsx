@@ -202,7 +202,7 @@ export default function Profile() {
                                 <div className="w-16 h-16 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 border border-slate-200">
                                   {item.productImageUrl ? (
                                     <img
-                                      src={item.productImageUrl.startsWith('http') ? item.productImageUrl : `http://localhost:5251${item.productImageUrl}`}
+                                      src={item.productImageUrl.startsWith('http') ? item.productImageUrl : `http://localhost:5252${item.productImageUrl}`}
                                       alt={item.productName}
                                       className="w-full h-full object-cover"
                                     />

@@ -24,6 +24,7 @@ import Dashboard from "./admin/dashboard/dashboard";
 import Orders from "./admin/orders/orders";
 import ProductsAdmin from "./admin/products/products";
 import Users from "./admin/users/users";
+import AdminCategories from "./admin/categories/categories";
 
 function AdminGuard({ children }) {
   const { isAdmin } = useAdminAuth();
@@ -67,6 +68,7 @@ const router = createHashRouter([
           { path: "dashboard", element: <Dashboard /> },
           { path: "orders", element: <Orders /> },
           { path: "products", element: <ProductsAdmin /> },
+          { path: "categories", element: <AdminCategories /> },
           { path: "users", element: <Users /> }
         ]
       }

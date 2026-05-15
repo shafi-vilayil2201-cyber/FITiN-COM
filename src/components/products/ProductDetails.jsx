@@ -54,7 +54,7 @@ const ProductDetails = () => {
 
         <div className="md:w-1/2 flex justify-center items-center bg-linear-to-r from-yellow-600 via-yellow-400 to-yellow-600 p-6 animate-shimmer">
           <img
-            src={details.imageUrl}
+            src={details.imageUrl ? (details.imageUrl.startsWith('http') ? details.imageUrl : `http://localhost:5252${details.imageUrl}`) : "https://via.placeholder.com/400"}
             alt={details.name}
             className="rounded-xl w-full h-80 object-cover shadow-2xl transition-transform duration-1000
             ease-[cubic-bezier(.13,.8,.5,1.2)] 
