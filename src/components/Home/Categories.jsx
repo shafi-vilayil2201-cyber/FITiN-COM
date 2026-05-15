@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllCategories, getAllProducts } from "../../services/api";
+import { getAllCategories, getAllProducts, IMAGE_BASE_URL } from "../../services/api";
 
 
 const Categories = () => {
@@ -49,7 +49,7 @@ const Categories = () => {
                                 <div className="absolute inset-0 bg-white/10 backdrop-blur-sm opacity-0 hover:opacity-20 transition-opacity duration-500"></div>
                                 <div className="w-15 h-15 ring-8  ring-emerald-600/40 rounded-full">
                                     <img
-                                        src={cat.imageUrl ? (cat.imageUrl.startsWith('http') ? cat.imageUrl : `http://localhost:5252${cat.imageUrl}`) : "https://via.placeholder.com/100"}
+                                        src={cat.imageUrl ? (cat.imageUrl.startsWith('http') ? cat.imageUrl : `${IMAGE_BASE_URL}${cat.imageUrl}`) : "https://via.placeholder.com/100"}
                                         alt={cat.name}
                                         className="w-15 h-15 rounded-full object-cover mb-0 shadow-xl ring-4 ring-emerald-600/30 transition-transform duration-700 ease-in-out hover:scale-110 hover:-translate-y-2"
                                     /></div>
@@ -72,7 +72,7 @@ const Categories = () => {
                                     className="border border-gray-100 rounded-2xl p-6 bg-white shadow-md hover:shadow-2xl hover:-translate-y-3 transition-all duration-500"
                                 >
                                     <img
-                                        src={product.imageUrl.startsWith('http') ? product.imageUrl : `http://localhost:5252${product.imageUrl}`}
+                                        src={product.imageUrl.startsWith('http') ? product.imageUrl.replace(':7071', ':5252') : `${IMAGE_BASE_URL}${product.imageUrl}`}
                                         alt={product.name}
                                         className="w-full h-60 object-cover rounded-xl mb-5 shadow-lg transition-transform duration-700 ease-in-out hover:scale-110"
                                     />

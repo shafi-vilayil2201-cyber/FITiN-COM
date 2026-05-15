@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllProducts } from "../../services/api";
+import { getAllProducts, IMAGE_BASE_URL } from "../../services/api";
 import { FaHeart } from "react-icons/fa";
 import { WishlistContext } from "../../contexts/wishListContext";
 
@@ -13,7 +13,7 @@ const Search = () =>
   const [sort, setSort] = useState("none");
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
-  const { addToWishlist, removeFromWishlist, wishList } = useContext(WishlistContext);
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useContext(WishlistContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -109,7 +109,7 @@ const Search = () =>
               >
                 <div className="relative">
                   <img
-                    src={product.imageUrl}
+                    src={product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl.replace(':7071', ':5252') : `${IMAGE_BASE_URL}${product.imageUrl}`) : "https://via.placeholder.com/200"}
                     alt={product.name}
                     className="w-full h-56 object-cover rounded-t-2xl"
                   />
@@ -118,14 +118,14 @@ const Search = () =>
                   </span>
                   <button
                     onClick={() =>
-                      wishList.some((item) => item.id === product.id)
+                      isInWishlist(product.id)
                         ? removeFromWishlist(product.id)
                         : addToWishlist(product)
                     }
                     className="absolute top-3 right-3 transition-transform transform hover:scale-110"
                     aria-label="Toggle wishlist"
                   >
-                    {wishList.some((item) => item.id === product.id) ? (
+                    {isInWishlist(product.id) ? (
                       <FaHeart size={22} className="text-red-500" />
                     ) : (
                       <FaHeart size={22} className="text-gray-400" />

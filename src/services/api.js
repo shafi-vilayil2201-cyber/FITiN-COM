@@ -5,6 +5,8 @@ const DEFAULT_TIMEOUT = 10_000;
 export const API_BASE =
   import.meta.env.VITE_API_BASE || "http://localhost:5252/api/";
 
+export const IMAGE_BASE_URL = API_BASE.replace("/api/", "");
+
 const api = axios.create({
   baseURL: API_BASE,
   timeout: DEFAULT_TIMEOUT,
@@ -143,6 +145,15 @@ export const adminUnblockUser = async (id) => handleRequest(api.patch(`users/${e
 // Admin Category Management
 export const adminCreateCategory = async (formData) => handleRequest(api.post("categories", formData));
 export const adminUpdateCategory = async (id, formData) => handleRequest(api.put(`categories/${encodeURIComponent(id)}`, formData));
-export const adminDeleteCategory = async (id) => handleRequest(api.delete(`categories/${encodeURIComponent(id)}`));
+export const adminDeleteCategory = async (id) => {
+  const response = await api.delete(`/categories/${id}`);
+  return response.data.data;
+};
+
+// Payment Verification
+export const confirmPayment = async (paymentData) => {
+  const response = await api.post('/orders/confirm-payment', paymentData);
+  return response.data;
+};
 
 export default api;

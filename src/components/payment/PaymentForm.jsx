@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CartContext } from "../../contexts/CartContext";
 import { toast } from "react-toastify";
-import { createOrder } from "../../services/api";
+import { createOrder, confirmPayment } from "../../services/api";
 import {
   FaShoppingBag,
   FaMapMarkerAlt,
@@ -80,25 +80,15 @@ const PaymentForm = () => {
     window.scrollTo(0, 0);
   };
 
-  const simulatePayment = () => {
-    setShowGateway(true);
-    setGatewayStatus("processing");
+  const handleRazorpayPayment = async () => {
+    if (!formData.name || !formData.address || !formData.city || !formData.postalCode || !formData.phone) {
+      toast.warning("Please fill all shipping fields!");
+      return;
+    }
 
-    // Simulate processing time
-    setTimeout(() => {
-      setGatewayStatus("success");
-
-      // After success, wait a bit then place the order
-      setTimeout(() => {
-        handleFinalPlaceOrder();
-      }, 1500);
-    }, 2500);
-  };
-
-  const handleFinalPlaceOrder = async () => {
     setLoading(true);
     try {
-      // Prepare items for the order
+      // 1. Create Order on Backend (Returns Razorpay Order ID)
       const items = isDirectPurchase
         ? [{ productId: directProduct.id, quantity: 1 }]
         : cart.map(item => ({
@@ -106,7 +96,7 @@ const PaymentForm = () => {
           quantity: item.quantity || 1
         }));
 
-      await createOrder({
+      const orderResponse = await createOrder({
         shippingName: formData.name,
         shippingAddress: formData.address,
         shippingCity: formData.city,
@@ -114,20 +104,69 @@ const PaymentForm = () => {
         shippingPhone: formData.phone,
         items: items
       });
-      
-      if (!isDirectPurchase) {
-        await clearCart();
-      }
-      toast.success("Payment Received & Order Placed!");
-      setShowGateway(false);
-      navigate("/");
+
+      const orderData = orderResponse; // Based on BaseApiController structure
+      const razorpayOrderId = orderData.razorpayOrderId;
+
+      // 2. Open Razorpay Modal
+      const options = {
+        key: "rzp_test_SpbpkO6f49yguG", // This should ideally come from backend or env
+        amount: orderData.totalAmount * 100,
+        currency: "INR",
+        name: "FITiN",
+        description: "Premium Fitness Gear",
+        order_id: razorpayOrderId,
+        handler: async function (response) {
+          // 3. Verify Payment on Backend
+          setGatewayStatus("processing");
+          setShowGateway(true);
+
+          try {
+            const verification = await confirmPayment({
+              orderId: orderData.orderId,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature
+            });
+
+            if (verification.isSuccess) {
+              setGatewayStatus("success");
+              if (!isDirectPurchase) await clearCart();
+              toast.success("Order Placed Successfully!");
+              setTimeout(() => {
+                navigate("/");
+              }, 2000);
+            } else {
+              toast.error(verification.message || "Payment Verification Failed!");
+              setShowGateway(false);
+            }
+          } catch (err) {
+            console.error("Verification error:", err);
+            toast.error("Error verifying payment.");
+            setShowGateway(false);
+          }
+        },
+        prefill: {
+          name: formData.name,
+          contact: formData.phone
+        },
+        theme: {
+          color: "#059669"
+        },
+        modal: {
+          ondismiss: function () {
+            setLoading(false);
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
     } catch (error) {
-      console.error("Error placing order:", error);
-      toast.error("Something went wrong while placing the order.");
-      setShowGateway(false);
-    } finally {
+      console.error("Payment initiation error:", error);
+      toast.error(error.message || "Failed to initiate payment");
       setLoading(false);
-      setGatewayStatus("idle");
     }
   };
 
@@ -341,11 +380,18 @@ const PaymentForm = () => {
                     </button>
                   ) : (
                     <button
-                      onClick={simulatePayment}
-                      className="w-full mt-8 py-5 bg-emerald-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 flex items-center justify-center gap-3"
+                      onClick={handleRazorpayPayment}
+                      disabled={loading}
+                      className="w-full mt-8 py-5 bg-emerald-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 disabled:opacity-50"
                     >
-                      <FaLock className="text-xs" />
-                      <span>Pay ₹{cartTotal.toLocaleString("en-IN")}</span>
+                      {loading ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <FaLock className="text-xs" />
+                          <span>Pay ₹{cartTotal.toLocaleString("en-IN")}</span>
+                        </>
+                      )}
                     </button>
                   )}
 
