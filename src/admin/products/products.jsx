@@ -9,7 +9,8 @@ import {
   FaTimes,
   FaCheck,
   FaBoxOpen,
-  FaTag
+  FaTag,
+  FaCloudUploadAlt
 } from "react-icons/fa";
 
 /* Environment-aware API helpers */
@@ -32,6 +33,8 @@ export default function ProductsAdmin() {
   const [formLoading, setFormLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   const emptyForm = {
     name: "",
@@ -106,6 +109,10 @@ export default function ProductsAdmin() {
         formData.append(backendKey, form[key]);
       });
 
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+
       let saved;
       if (editingProduct) {
         saved = await adminUpdateProduct(editingProduct.id, formData);
@@ -117,6 +124,8 @@ export default function ProductsAdmin() {
         toast.success("Product created");
       }
       setPanelOpen(false);
+      setImageFile(null);
+      setImagePreview(null);
     } catch (error) {
       console.error(error);
       toast.error("Failed to save product");
@@ -150,7 +159,13 @@ export default function ProductsAdmin() {
             />
           </div>
           <button
-            onClick={() => { setEditingProduct(null); setForm(emptyForm); setPanelOpen(true); }}
+            onClick={() => { 
+              setEditingProduct(null); 
+              setForm(emptyForm); 
+              setImageFile(null);
+              setImagePreview(null);
+              setPanelOpen(true); 
+            }}
             className="flex items-center gap-2 px-6 py-2 bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 hover:-translate-y-0.5 active:translate-y-0 transition-all"
           >
             <FaPlus className="text-sm" />
@@ -227,6 +242,8 @@ export default function ProductsAdmin() {
                             categoryId: product.categoryId,
                             description: product.description || product.shortDescription || ""
                           });
+                          setImageFile(null);
+                          setImagePreview(null);
                           setPanelOpen(true);
                         }}
                         className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
@@ -340,14 +357,57 @@ export default function ProductsAdmin() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Image URL</label>
-                  <input
-                    type="text"
-                    value={form.imageUrl}
-                    onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-                    placeholder="https://..."
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none text-xs font-medium"
-                  />
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Product Image</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="relative group">
+                      <input
+                        type="file"
+                        id="product-image"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            setImageFile(file);
+                            setImagePreview(URL.createObjectURL(file));
+                          }
+                        }}
+                        accept="image/*"
+                      />
+                      <label 
+                        htmlFor="product-image"
+                        className="flex flex-col items-center justify-center w-full h-32 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:bg-emerald-50 hover:border-emerald-200 transition-all overflow-hidden"
+                      >
+                        {imagePreview || form.imageUrl ? (
+                          <div className="relative w-full h-full group">
+                            <img src={imagePreview || (form.imageUrl?.startsWith('http') ? form.imageUrl : `http://localhost:5252${form.imageUrl}`)} alt="preview" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <FaCloudUploadAlt className="text-white text-2xl" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-center p-4">
+                            <FaCloudUploadAlt size={20} className="mx-auto mb-2 text-slate-400 group-hover:text-emerald-500 transition-colors" />
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Upload File</p>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Or paste URL</label>
+                      <input
+                        type="text"
+                        value={form.imageUrl}
+                        onChange={(e) => {
+                          setForm({ ...form, imageUrl: e.target.value });
+                          setImagePreview(null);
+                        }}
+                        placeholder="https://..."
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none text-xs font-medium"
+                      />
+                      <p className="text-[9px] text-slate-400 mt-1 italic">File upload takes priority over URL</p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-1">

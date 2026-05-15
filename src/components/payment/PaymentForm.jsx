@@ -98,16 +98,23 @@ const PaymentForm = () => {
   const handleFinalPlaceOrder = async () => {
     setLoading(true);
     try {
+      // Prepare items for the order
+      const items = isDirectPurchase
+        ? [{ productId: directProduct.id, quantity: 1 }]
+        : cart.map(item => ({
+          productId: item.productId || item.id,
+          quantity: item.quantity || 1
+        }));
+
       await createOrder({
         shippingName: formData.name,
         shippingAddress: formData.address,
         shippingCity: formData.city,
         shippingPostalCode: formData.postalCode,
         shippingPhone: formData.phone,
-        productId: isDirectPurchase ? directProduct.id : null,
-        quantity: isDirectPurchase ? 1 : null,
-        totalAmount: cartTotal // Adding totalAmount to the payload
+        items: items
       });
+      
       if (!isDirectPurchase) {
         await clearCart();
       }

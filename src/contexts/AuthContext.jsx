@@ -6,7 +6,7 @@ export function useAuth() {
   return useContext(AuthContext);
 }
 
-import { API_BASE, getProfile } from '../services/api';
+import { getProfile, logoutUser } from '../services/api';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -73,7 +73,12 @@ export function AuthProvider({ children }) {
 
   const login = (u) => setUser(u);
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await logoutUser();
+    } catch {
+      // ignore — still clear local state even if the request fails
+    }
     try { localStorage.removeItem('currentUser'); } catch { }
     setUser(null);
   };
