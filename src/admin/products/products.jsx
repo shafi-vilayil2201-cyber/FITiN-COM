@@ -19,7 +19,8 @@ import {
   getAllCategories,
   adminCreateProduct,
   adminUpdateProduct,
-  adminDeleteProduct
+  adminDeleteProduct,
+  IMAGE_BASE_URL
 } from '../../services/api';
 
 export default function ProductsAdmin() {
@@ -204,7 +205,7 @@ export default function ProductsAdmin() {
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-100 group-hover:scale-105 transition-transform">
                         {product.imageUrl ? (
-                          <img src={product.imageUrl} alt="" className="w-full h-full object-cover" />
+                          <img src={product.imageUrl.startsWith('http') ? product.imageUrl : `${IMAGE_BASE_URL}${product.imageUrl}`} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-300"><FaImage /></div>
                         )}
@@ -379,7 +380,7 @@ export default function ProductsAdmin() {
                       >
                         {imagePreview || form.imageUrl ? (
                           <div className="relative w-full h-full group">
-                            <img src={imagePreview || (form.imageUrl?.startsWith('http') ? form.imageUrl : `http://localhost:5252${form.imageUrl}`)} alt="preview" className="w-full h-full object-cover" />
+                            <img src={imagePreview || (form.imageUrl?.startsWith('http') ? form.imageUrl : `${IMAGE_BASE_URL}${form.imageUrl}`)} alt="preview" className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                               <FaCloudUploadAlt className="text-white text-2xl" />
                             </div>

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaBoxOpen, FaSignOutAlt, FaCog, FaShoppingBag } from "react-icons/fa";
 import { AuthContext } from "../contexts/AuthContext";
-import { getUserOrders } from "../services/api";
+import { getUserOrders, IMAGE_BASE_URL } from "../services/api";
 
 // Helpers
 const statusToPercent = (status) => {
@@ -202,7 +202,7 @@ export default function Profile() {
                                 <div className="w-16 h-16 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 border border-slate-200">
                                   {item.productImageUrl ? (
                                     <img
-                                      src={item.productImageUrl.startsWith('http') ? item.productImageUrl : `http://localhost:5252${item.productImageUrl}`}
+                                      src={item.productImageUrl.startsWith('http') ? item.productImageUrl : `${IMAGE_BASE_URL}${item.productImageUrl}`}
                                       alt={item.productName}
                                       className="w-full h-full object-cover"
                                     />

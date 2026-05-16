@@ -3,7 +3,8 @@ import {
   getAllCategories,
   adminCreateCategory,
   adminUpdateCategory,
-  adminDeleteCategory
+  adminDeleteCategory,
+  IMAGE_BASE_URL
 } from "../../services/api";
 import { toast } from "react-toastify";
 import {
@@ -171,7 +172,7 @@ export default function AdminCategories() {
               <div className="relative h-40 bg-slate-50 overflow-hidden">
                 {category.imageUrl ? (
                   <img
-                    src={category.imageUrl.startsWith('http') ? category.imageUrl : `http://localhost:5252${category.imageUrl}`}
+                    src={category.imageUrl.startsWith('http') ? category.imageUrl : `${IMAGE_BASE_URL}${category.imageUrl}`}
                     alt={category.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
