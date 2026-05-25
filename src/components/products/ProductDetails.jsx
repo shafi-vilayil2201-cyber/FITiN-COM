@@ -1,9 +1,13 @@
-import React, { useEffect, useState, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { getAllProducts, IMAGE_BASE_URL } from "../../services/api.js";
 import { CartContext } from "../../contexts/CartContext.jsx";
-import { WishlistContext } from '../../contexts/wishListContext.jsx'
-import "../../../src/App.css";
+import { WishlistContext } from "../../contexts/wishListContext.jsx";
+
+const getImageUrl = (value) => {
+  if (!value) return "https://via.placeholder.com/400";
+  return value.startsWith("http") ? value.replace(":7071", ":5252") : `${IMAGE_BASE_URL}${value}`;
+};
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -18,8 +22,7 @@ const ProductDetails = () => {
       setPending(true);
       try {
         const data = await getAllProducts();
-        const product = data.find((item) => String(item.id) === id);
-        setDetails(product);
+        setDetails((data ?? []).find((item) => String(item.id) === id));
       } catch (error) {
         console.error("Error fetching product details:", error);
       } finally {
@@ -29,134 +32,94 @@ const ProductDetails = () => {
     fetchProduct();
   }, [id]);
 
+  if (pending) return <div className="py-20 text-center text-slate-500">Loading product details...</div>;
+  if (!details) return <div className="py-20 text-center text-slate-500">Product not found.</div>;
 
-  if (pending) {
-    return (
-      <div className="flex justify-center items-center h-screen text-lg text-gray-600">
-        Loading product details...
-      </div>
-    );
-  }
-
-
-  if (!details) {
-    return (
-      <div className="flex justify-center items-center h-screen text-lg text-red-500">
-        Product not found!
-      </div>
-    );
-  }
-
+  const finalPrice = details.discount > 0 ? details.price - (details.price * details.discount) / 100 : details.price;
 
   return (
-    <div className="min-h-screen flex justify-center items-center p-6">
-      <div className="bg-white rounded-2xl shadow-2xl flex flex-col md:flex-row w-full max-w-5xl overflow-hidden">
+    <section className="px-3 py-8 md:px-6 md:py-12">
+      <div className="section-shell premium-card rounded-[38px] p-4 md:p-6">
+        <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="overflow-hidden rounded-[30px] border border-slate-200/70 bg-white/82 p-3 shadow-[0_18px_38px_rgba(148,163,184,0.10),inset_0_1px_0_rgba(255,255,255,0.92)]">
+            <img src={getImageUrl(details.imageUrl)} alt={details.name} className="image-bleed h-[420px] w-full rounded-[26px] md:h-[620px]" />
+          </div>
 
-        <div className="md:w-1/2 flex justify-center items-center bg-linear-to-r from-yellow-600 via-yellow-400 to-yellow-600 p-6 animate-shimmer">
-          <img
-            src={details.imageUrl ? (details.imageUrl.startsWith('http') ? details.imageUrl.replace(':7071', ':5252') : `${IMAGE_BASE_URL}${details.imageUrl.replace(':7071', ':5252')}`) : "https://via.placeholder.com/400"}
-            alt={details.name}
-            className="rounded-xl w-full h-80 object-cover shadow-2xl transition-transform duration-1000
-            ease-[cubic-bezier(.13,.8,.5,1.2)] 
-            hover:-translate-y-4 hover:scale-110 hover:-rotate-2
-            focus:-translate-y-4 focus:scale-115 focus:-rotate-2
-            outline-none z-1"
-          />
-        </div>
+          <div className="p-2 md:p-4">
+            <p className="section-kicker">{details.categoryName || "Product detail"}</p>
+            <h1 className="display-title mt-5 text-slate-900">{details.name}</h1>
+            <p className="mt-3 text-base font-medium text-slate-500">
+              {details.brand || "FitN"} {details.sport ? `· ${details.sport}` : ""}
+            </p>
 
-        <div className="md:w-1/2 p-8 flex flex-col justify-center">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            {details.name}
-          </h1>
-          <h2 className="text-lg text-gray-600 mb-4">
-            Brand: <span className="font-semibold">{details.brand}</span>
-          </h2>
-          <p className="text-gray-700 mb-4">{details.description}</p>
-          <div className="mb-4">
-            {details.discount > 0 ? (
-              <div className="flex items-center gap-3">
-                <span className="text-3xl font-black text-emerald-600">
-                  ₹{(details.price - (details.price * details.discount / 100)).toLocaleString("en-IN")}
-                </span>
-                <span className="text-lg text-gray-400 line-through decoration-rose-500/50 font-bold">
-                  ₹{details.price.toLocaleString("en-IN")}
-                </span>
-                <span className="bg-rose-50 text-rose-600 text-xs font-black px-2 py-1 rounded-lg border border-rose-100">
-                  {details.discount}% OFF
-                </span>
+            <div className="mt-8 flex flex-wrap items-end gap-4">
+              <p className="text-4xl font-semibold tracking-[-0.05em] text-slate-900">
+                Rs {Number(finalPrice ?? 0).toLocaleString("en-IN")}
+              </p>
+              {details.discount > 0 && (
+                <>
+                  <p className="text-lg text-slate-400 line-through">
+                    Rs {Number(details.price ?? 0).toLocaleString("en-IN")}
+                  </p>
+                  <span className="rounded-full bg-[#ff8d49] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-white">
+                    {details.discount}% off
+                  </span>
+                </>
+              )}
+            </div>
+
+            <p className="body-copy mt-6">
+              {details.description || details.shortDescription || "Premium presentation for a backend-driven product detail page."}
+            </p>
+
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[24px] border border-slate-200/70 bg-white/82 p-4 shadow-[0_12px_28px_rgba(148,163,184,0.10),inset_0_1px_0_rgba(255,255,255,0.92)]">
+                <p className="card-metadata">Rating</p>
+                <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-900">⭐ {details.rating || "4.8"}</p>
               </div>
-            ) : (
-              <div className="text-3xl font-black text-emerald-600">
-                ₹{details.price?.toLocaleString("en-IN")}
+              <div className="rounded-[24px] border border-slate-200/70 bg-white/82 p-4 shadow-[0_12px_28px_rgba(148,163,184,0.10),inset_0_1px_0_rgba(255,255,255,0.92)]">
+                <p className="card-metadata">Stock</p>
+                <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-900">{details.stock > 0 ? details.stock : "Sold out"}</p>
+              </div>
+              <div className="rounded-[24px] border border-slate-200/70 bg-white/82 p-4 shadow-[0_12px_28px_rgba(148,163,184,0.10),inset_0_1px_0_rgba(255,255,255,0.92)]">
+                <p className="card-metadata">Brand</p>
+                <p className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-900">{details.brand || "FitN"}</p>
+              </div>
+            </div>
+
+            {details.longDescription && (
+              <div className="mt-6 rounded-[26px] border border-slate-200/70 bg-white/82 p-5 shadow-[0_12px_28px_rgba(148,163,184,0.10),inset_0_1px_0_rgba(255,255,255,0.92)]">
+                <p className="card-metadata">Overview</p>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{details.longDescription}</p>
               </div>
             )}
-          </div>
-          <p className="text-yellow-500 font-medium mb-4">
-            ⭐ {details.rating} / 5
-          </p>
 
-          <p className="text-gray-700 mb-2">
-            {details.shortDescription}
-          </p>
-          <p className="text-gray-600 mb-4">{details.longDescription}</p>
-
-          <div className="flex flex-wrap gap-4 mb-4 text-gray-700 text-sm">
-            <p>
-              <span className="font-semibold">Category:</span> {details.categoryName}
-            </p>
-            <p>
-              <span className="font-semibold">Stock:</span> {details.stock > 0 ? details.stock : <span className="text-rose-600 font-black">Out of Stock</span>}
-            </p>
-            <p>
-              <span className="font-semibold">Discount:</span> {details.discount}%
-            </p>
-          </div>
-
-          {details.specs && (
-            <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              <h3 className="font-semibold text-gray-800 mb-2">Specifications:</h3>
-              <ul className="list-disc list-inside text-gray-700 text-sm space-y-1">
-                {details.specs.weight && <li>Weight: {details.specs.weight}</li>}
-                {details.specs.material && <li>Material: {details.specs.material}</li>}
-                {details.specs.headSize && <li>Head Size: {details.specs.headSize}</li>}
-              </ul>
+            <div className="mt-8 flex flex-wrap gap-3 rounded-[28px] border border-slate-200/65 bg-white/74 p-4 shadow-[0_10px_24px_rgba(148,163,184,0.08),inset_0_1px_0_rgba(255,255,255,0.90)]">
+              <button
+                onClick={() => addToCart(details)}
+                disabled={details.stock <= 0}
+                className={`px-6 py-4 text-sm ${details.stock <= 0 ? "ghost-cta opacity-60" : isInCart(details.id) ? "ghost-cta" : "primary-cta"}`}
+              >
+                {details.stock <= 0 ? "Sold out" : isInCart(details.id) ? "Already in cart" : "Add to cart"}
+              </button>
+              <button
+                onClick={() => navigate("/checkout", { state: { product: details } })}
+                disabled={details.stock <= 0}
+                className="accent-cta px-6 py-4 text-sm disabled:opacity-60"
+              >
+                Buy now
+              </button>
+              <button
+                onClick={() => (isInWishlist(details.id) ? removeFromWishlist(details.id) : addToWishlist(details))}
+                className="ghost-cta px-6 py-4 text-sm"
+              >
+                {isInWishlist(details.id) ? "Saved" : "Save to wishlist"}
+              </button>
             </div>
-          )}
-
-          <div className="flex gap-4">
-            <button
-              onClick={() => addToCart(details)}
-              disabled={details.stock <= 0}
-              className={`px-6 py-2 rounded-lg transition duration-300 ${details.stock <= 0
-                ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
-                : isInCart(details.id)
-                  ? "bg-slate-200 text-slate-600 cursor-default font-bold"
-                  : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-200 active:scale-95"
-                }`}>
-              {details.stock <= 0 ? "Sold Out" : isInCart(details.id) ? "✓ In Cart" : "Add to Cart"}
-            </button>
-            <button
-              onClick={() => navigate("/checkout", { state: { product: details } })}
-              disabled={details.stock <= 0}
-              className={`px-6 py-2 rounded-lg transition duration-300 ${details.stock <= 0
-                ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
-                : "bg-cyan-600 text-white hover:bg-cyan-700 shadow-lg shadow-cyan-200 active:scale-95"
-                }`}
-            >
-              {details.stock <= 0 ? "Unavailable" : "Buy now"}
-            </button>
-            <button
-              onClick={() => isInWishlist(details.id) ? removeFromWishlist(details.id) : addToWishlist(details)}
-              className={`px-6 py-2 rounded-lg transition duration-300 ${isInWishlist(details.id)
-                ? "bg-red-500 text-white hover:bg-red-600"
-                : "bg-purple-600 text-white hover:bg-purple-700"
-                }`}>
-              {isInWishlist(details.id) ? "♥ In Wishlist" : "Add to Wishlist"}
-            </button>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

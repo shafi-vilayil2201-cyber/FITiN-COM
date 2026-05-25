@@ -1,18 +1,8 @@
-import React from 'react'
-import ProductCard from '../components/products/ProductCard'
-import ProductDetails from '../components/products/ProductDetails'
-
-
+import React from "react";
+import ProductCard from "../components/products/ProductCard";
 
 const Products = () => {
-  return (
-    <div>
-      
-      <ProductCard/>
-    </div>
-  )
-}
+  return <ProductCard />;
+};
 
-export default Products
-
-
+export default Products;

@@ -1,101 +1,139 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllCategories, getAllProducts, IMAGE_BASE_URL } from "../../services/api";
+import { IMAGE_BASE_URL } from "../../services/api";
 
+const getImageUrl = (value) => {
+  if (!value) {
+    return "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=80";
+  }
+  return value.startsWith("http") ? value : `${IMAGE_BASE_URL}${value}`;
+};
 
-const Categories = () => {
-    const [categories, setCategories] = useState([]);
-    const [products, setProducts] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState(null);
+const Categories = ({
+  categories = [],
+  products = [],
+  loading,
+  selectedCategory,
+  onCategorySelect,
+  sectionRef,
+}) => {
+  const navigate = useNavigate();
+  const activeCategoryRef = useRef(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [productData, categoriesData] = await Promise.all([getAllProducts(), getAllCategories()])
-                setProducts(productData);
-                setCategories(categoriesData);
-            } catch (error) {
-                console.error("Error fetching products:", error);
-            }
-        };
-        fetchData();
-    }, []);
+  useEffect(() => {
+    activeCategoryRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+  }, [selectedCategory]);
 
-    const navigate = useNavigate();
+  const filteredProducts = selectedCategory
+    ? products.filter((product) => product.categoryName === selectedCategory).slice(0, 3)
+    : [];
 
-    const filteredProducts = selectedCategory
-        ? products.filter((p) => p.categoryName === selectedCategory)
-        : [];
+  return (
+    <section ref={sectionRef} className="px-3 py-10 md:px-6 md:py-14">
+      <div className="section-shell">
+        <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="section-kicker">Featured categories</p>
+            <h2 className="section-title mt-4 text-slate-900">Structured, touchable category browsing.</h2>
+            <p className="body-copy mt-4 max-w-2xl">
+              Categories become large destination cards with supporting previews instead of small marketplace filters.
+            </p>
+          </div>
+          <button onClick={() => navigate("/products")} className="ghost-cta self-start px-5 py-3 text-sm">
+            View all products
+          </button>
+        </div>
 
-    return (
-        <>
-
-            <div className="p-0 md:p-20 w-[95%] min-h-screen md:h-min mx-auto  rounded-2xl pt-5">
-                <h1 className="text-4xl font-extrabold mb-10 text-emerald-700 text-center tracking-wide drop-shadow-sm">Pick a Category</h1>
-
-
-                <div className="w-full mb-0">
-                    <div className="flex flex-wrap justify-center gap-3 md:gap-5 w-full">
-                        {categories.map((cat, index) => (
-                            <div
-                                key={index}
-                                onClick={() => setSelectedCategory(cat.name)}
-                                className={`relative flex flex-col items-center justify-center w-28 h-36 md:w-30 md:h-30 rounded-3xl cursor-pointer overflow-hidden transition-all duration-500 transform 
-                                ${selectedCategory === cat.name
-                                        ? " text-green scale-105 shadow-2xl ring-3 ring-emerald-200"
-                                        : " text-green hover:from-emerald-800 hover:to-teal-700 hover:scale-105 shadow-lg hover:shadow-emerald-500/50"
-                                    }`}
-                            >
-                                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm opacity-0 hover:opacity-20 transition-opacity duration-500"></div>
-                                <div className="w-15 h-15 ring-8  ring-emerald-600/40 rounded-full">
-                                    <img
-                                        src={cat.imageUrl ? (cat.imageUrl.startsWith('http') ? cat.imageUrl : `${IMAGE_BASE_URL}${cat.imageUrl}`) : "https://via.placeholder.com/100"}
-                                        alt={cat.name}
-                                        className="w-15 h-15 rounded-full object-cover mb-0 shadow-xl ring-4 ring-emerald-600/30 transition-transform duration-700 ease-in-out hover:scale-110 hover:-translate-y-2"
-                                    /></div>
-                                <span className=" text-sm tracking-wide uppercase drop-shadow-sm mt-2">{cat.name}</span>
-                            </div>
-                        ))}
+        <div className="grid gap-5 lg:grid-cols-[0.92fr_1.08fr]">
+          <div className="relative">
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-10 rounded-t-[30px] bg-linear-to-b from-[#f5f5f3] to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-10 rounded-b-[30px] bg-linear-to-t from-[#f5f5f3] to-transparent" />
+            <div className="grid max-h-[30.5rem] gap-4 overflow-y-auto pr-2">
+            {categories.map((category, index) => {
+              const active = selectedCategory === category.name;
+              return (
+                <button
+                  key={category.id ?? category.name ?? index}
+                  ref={active ? activeCategoryRef : null}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => onCategorySelect?.(category.name)}
+                  className={`premium-card rounded-[30px] p-4 text-left md:p-5 ${
+                    active ? "is-active ring-1 ring-slate-900/8" : ""
+                  }`}
+                >
+                  <div className="grid grid-cols-[1fr_auto] items-center gap-4">
+                    <div>
+                      <p className="card-metadata">Category {String(index + 1).padStart(2, "0")}</p>
+                      <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-900 md:text-3xl">
+                        {category.name}
+                      </h3>
+                      <p className="mt-2 text-sm text-slate-500">
+                        Premium equipment, training aids, and supporting products arranged for calmer discovery.
+                      </p>
                     </div>
-                </div>
-
-                {selectedCategory && (
-                    <div className="mt-8">
-                        <h2 className="text-3xl font-bold mb-6 text-emerald-700 border-b-4 border-emerald-500 inline-block pb-1">
-                            {selectedCategory}
-                        </h2>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                            {filteredProducts.map((product) => (
-                                <div
-                                    key={product.id}
-                                    className="border border-gray-100 rounded-2xl p-6 bg-white shadow-md hover:shadow-2xl hover:-translate-y-3 transition-all duration-500"
-                                >
-                                    <img
-                                        src={product.imageUrl.startsWith('http') ? product.imageUrl.replace(':7071', ':5252') : `${IMAGE_BASE_URL}${product.imageUrl}`}
-                                        alt={product.name}
-                                        className="w-full h-60 object-cover rounded-xl mb-5 shadow-lg transition-transform duration-700 ease-in-out hover:scale-110"
-                                    />
-                                    <h3 className="text-lg font-semibold">{product.name}</h3>
-                                    <p className="text-sm text-gray-600">{product.brand}</p>
-                                    <div className=" flex justify-between">
-                                        <p className="text-emerald-600 font-bold mt-2">
-                                            ₹{product.price}
-                                        </p>
-                                        <button
-                                            onClick={() => navigate(`/products/${product.id}`)}
-                                            className="px-5 py-2.5 bg-linear-to-r from-emerald-500 to-emerald-700 text-white text-sm font-semibold rounded-lg shadow hover:from-emerald-600 hover:to-emerald-800 transition-all duration-300 transform hover:scale-105"
-                                        >View Details</button>
-                                    </div>
-
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                    <img
+                      src={getImageUrl(category.imageUrl)}
+                      alt={category.name}
+                      className="image-bleed h-20 w-20 rounded-[24px] object-cover md:h-24 md:w-24"
+                    />
+                  </div>
+                </button>
+              );
+            })}
             </div>
-        </>
-    );
+          </div>
+
+          <div className="premium-card rounded-[34px] p-4 md:p-5">
+            <div className="mb-4 flex items-end justify-between">
+              <div>
+                <p className="card-metadata">{selectedCategory || "Category preview"}</p>
+                <h3 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-slate-900 md:text-4xl">
+                  Curated highlights
+                </h3>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="rounded-[28px] bg-white/70 px-6 py-20 text-center text-slate-500">Loading preview...</div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {filteredProducts.map((product) => (
+                  <article
+                    key={product.id}
+                    className="overflow-hidden rounded-[28px] bg-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
+                  >
+                    <img
+                      src={getImageUrl(product.imageUrl)}
+                      alt={product.name}
+                      className="image-bleed h-52 w-full rounded-[28px] rounded-b-[18px]"
+                    />
+                    <div className="p-4">
+                      <p className="card-metadata">{product.brand || selectedCategory}</p>
+                      <h4 className="mt-2 text-xl font-semibold tracking-[-0.04em] text-slate-900">
+                        {product.name}
+                      </h4>
+                      <div className="mt-4 flex items-center justify-between gap-3">
+                        <p className="text-lg font-semibold tracking-[-0.03em] text-slate-900">
+                          Rs {Number(product.price ?? 0).toLocaleString("en-IN")}
+                        </p>
+                        <button onClick={() => navigate(`/products/${product.id}`)} className="soft-pill px-4 py-2 text-sm font-semibold text-slate-700">
+                          Details
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 };
 
 export default Categories;

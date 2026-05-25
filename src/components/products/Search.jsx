@@ -1,11 +1,15 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { FaHeart } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getAllProducts, IMAGE_BASE_URL } from "../../services/api";
-import { FaHeart } from "react-icons/fa";
 import { WishlistContext } from "../../contexts/wishListContext";
 
-const Search = () =>
-{
+const getImageUrl = (value) => {
+  if (!value) return "https://via.placeholder.com/200";
+  return value.startsWith("http") ? value.replace(":7071", ":5252") : `${IMAGE_BASE_URL}${value}`;
+};
+
+const Search = () => {
   const [products, setProducts] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,15 +24,11 @@ const Search = () =>
     const fetchProducts = async () => {
       try {
         const res = await getAllProducts();
-        setProducts(res);
-
-        const uniqueCategories = [...new Set(res.map((p) => p.categoryName).filter(Boolean))];
-        setCategories(uniqueCategories);
-      } catch (error)
-      {
+        setProducts(res ?? []);
+        setCategories([...new Set((res ?? []).map((product) => product.categoryName).filter(Boolean))]);
+      } catch (error) {
         console.error("Error fetching products:", error);
-      } finally
-      {
+      } finally {
         setLoading(false);
       }
     };
@@ -36,143 +36,101 @@ const Search = () =>
     fetchProducts();
   }, []);
 
-  useEffect(() =>
-  {
+  useEffect(() => {
     let result = [...products];
-    if (searchTerm)
-    {
-      result = result.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    }
-    if (category !== "all") {
-      result = result.filter((p) => p.categoryName === category);
-    }
-
+    if (searchTerm) result = result.filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    if (category !== "all") result = result.filter((product) => product.categoryName === category);
     if (sort === "low-high") result.sort((a, b) => a.price - b.price);
-    else if (sort === "high-low") result.sort((a, b) => b.price - a.price);
-
+    if (sort === "high-low") result.sort((a, b) => b.price - a.price);
     setFiltered(result);
   }, [searchTerm, category, sort, products]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 pt-20 pb-10">
-      <h1 className="text-3xl font-bold mb-8 text-center text-emerald-700">
-        Discover Your Perfect Product
-      </h1>
-
-      <div className="flex flex-col md:flex-row gap-4 mb-8 justify-center bg-white shadow-md rounded-xl p-4">
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          autoFocus
-          className="border border-gray-300 px-4 py-2 rounded-md w-full md:w-1/3 focus:ring-2 focus:ring-emerald-500 outline-none"
-        />
-
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="border border-gray-300 px-4 py-2 rounded-md focus:ring-2 focus:ring-emerald-500"
-        >
-          <option value="all">All Categories</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-          className="border border-gray-300 px-4 py-2 rounded-md focus:ring-2 focus:ring-emerald-500"
-        >
-          <option value="none">Sort By</option>
-          <option value="low-high">Price: Low to High</option>
-          <option value="high-low">Price: High to Low</option>
-        </select>
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center items-center py-20">
-          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+    <div className="section-shell px-3 pt-6 md:px-0">
+      <div className="premium-card rounded-[34px] p-5 md:p-6">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="section-kicker">Product listing</p>
+            <h1 className="section-title mt-4 text-slate-900">Discover the right fit, faster.</h1>
+          </div>
+          <p className="body-copy max-w-md text-sm">
+            Filters, search, and sorting live inside the same soft card framework as the rest of the store.
+          </p>
         </div>
-      ) : filtered.length === 0 ? (
-        <p className="text-center text-gray-500 py-10">No products found.</p>
-      ) : (
-        <section className="w-full min-h-screen py-8 animate-fadeIn">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+
+        <div className="grid gap-4 md:grid-cols-[1.6fr_0.8fr_0.8fr]">
+          <input
+            type="text"
+            placeholder="Search products"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="rounded-[22px] border border-white/80 bg-white/72 px-5 py-4 text-slate-900 outline-none focus:border-slate-300"
+          />
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="rounded-[22px] border border-white/80 bg-white/72 px-5 py-4 text-slate-700 outline-none"
+          >
+            <option value="all">All Categories</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="rounded-[22px] border border-white/80 bg-white/72 px-5 py-4 text-slate-700 outline-none"
+          >
+            <option value="none">Sort By</option>
+            <option value="low-high">Price: Low to High</option>
+            <option value="high-low">Price: High to Low</option>
+          </select>
+        </div>
+
+        {loading ? (
+          <div className="py-12 text-center text-slate-500">Loading products...</div>
+        ) : filtered.length === 0 ? (
+          <div className="py-12 text-center text-slate-500">No products found.</div>
+        ) : (
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((product) => (
-              <div
+              <article
                 key={product.id}
-                className="bg-white rounded-2xl shadow-md hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 hover:scale-[1.02] flex flex-col overflow-hidden"
+                className="rounded-[28px] border border-white/75 bg-white/82 p-3 shadow-[0_16px_34px_rgba(148,163,184,0.10),inset_0_1px_0_rgba(255,255,255,0.88)]"
               >
-                <div className="relative">
-                  <img
-                    src={product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl.replace(':7071', ':5252') : `${IMAGE_BASE_URL}${product.imageUrl}`) : "https://via.placeholder.com/200"}
-                    alt={product.name}
-                    className="w-full h-56 object-cover rounded-t-2xl"
-                  />
-                  <span className="absolute top-3 left-3 bg-linear-to-r from-emerald-600 to-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+                <div className="relative overflow-hidden rounded-[24px] border border-slate-200/45 bg-linear-to-b from-white to-[#f3f4ef]">
+                  <img src={getImageUrl(product.imageUrl)} alt={product.name} className="image-bleed h-60 w-full" />
+                  <span className="absolute left-3 top-3 floating-chip px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-700">
                     {product.categoryName || "New"}
                   </span>
                   <button
                     onClick={() =>
-                      isInWishlist(product.id)
-                        ? removeFromWishlist(product.id)
-                        : addToWishlist(product)
+                      isInWishlist(product.id) ? removeFromWishlist(product.id) : addToWishlist(product)
                     }
-                    className="absolute top-3 right-3 transition-transform transform hover:scale-110"
+                    className="absolute right-3 top-3 soft-pill p-3 text-slate-700"
                     aria-label="Toggle wishlist"
                   >
-                    {isInWishlist(product.id) ? (
-                      <FaHeart size={22} className="text-red-500" />
-                    ) : (
-                      <FaHeart size={22} className="text-gray-400" />
-                    )}
+                    <FaHeart size={14} className={isInWishlist(product.id) ? "text-[#ff8d49]" : "text-slate-500"} />
                   </button>
                 </div>
-
-                <div className="p-5 flex flex-col grow justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-1 line-clamp-1">
-                      {product.name}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-                      {product.brand} {product.sport ? `- ${product.sport}` : ""}
-                    </p>
-                    {product.shortDescription && (
-                      <p className="text-gray-500 text-sm mb-2 line-clamp-2">
-                        {product.shortDescription}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between mt-auto">
+                <div className="mt-3 border-t border-slate-200/70 p-2 pt-4">
+                  <p className="card-metadata">{product.brand || "FitN"}</p>
+                  <h3 className="mt-2 text-xl font-semibold tracking-[-0.04em] text-slate-900">{product.name}</h3>
+                  <div className="mt-4 flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-lg font-semibold text-emerald-700">
-                        ₹{product.price}
-                      </p>
-                      {product.discount > 0 && (
-                        <p className="text-xs text-orange-600 font-medium">
-                          {product.discount}% off
-                        </p>
-                      )}
+                      <p className="text-lg font-semibold text-slate-900">Rs {product.price}</p>
+                      {product.discount > 0 && <p className="text-sm text-[#ff8d49]">{product.discount}% off</p>}
                     </div>
-
-                    <button
-                      onClick={() => navigate(`/products/${product.id}`)}
-                      className="px-5 py-2.5 bg-linear-to-r from-emerald-500 to-emerald-700 text-white text-sm font-semibold rounded-lg shadow hover:from-emerald-600 hover:to-emerald-800 transition-all duration-300 transform hover:scale-105"
-                    >
-                      View Details
+                    <button onClick={() => navigate(`/products/${product.id}`)} className="ghost-cta px-4 py-2 text-sm">
+                      Details
                     </button>
                   </div>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
-        </section>
-      )}
+        )}
+      </div>
     </div>
   );
 };
