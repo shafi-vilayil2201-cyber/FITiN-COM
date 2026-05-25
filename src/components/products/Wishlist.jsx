@@ -1,9 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { WishlistContext } from "../../contexts/wishListContext";
-import { CartContext } from "../../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
+import { CartContext } from "../../contexts/CartContext";
+import { WishlistContext } from "../../contexts/wishListContext";
 import { IMAGE_BASE_URL } from "../../services/api";
+
+const getImageUrl = (value) => {
+  if (!value) return "/placeholder.png";
+  return value.startsWith("http") ? value : `${IMAGE_BASE_URL}${value}`;
+};
 
 const Wishlist = () => {
   const { wishList, removeFromWishlist, refreshWishlist } = useContext(WishlistContext);
@@ -20,71 +24,47 @@ const Wishlist = () => {
     load();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        <p className="text-gray-700 text-lg">Loading your wishlist...</p>
-      </div>
-    );
-  }
+  if (loading) return <div className="py-20 text-center text-slate-500">Loading your wishlist...</div>;
 
   return (
-    <div className="min-h-screen py-20 px-4 sm:px-8">
-      <h1 className="text-center text-3xl font-extrabold text-emerald-700 mb-10">
-        Your Wishlist
-      </h1>
+    <section className="px-3 py-8 md:px-6 md:py-12">
+      <div className="section-shell premium-card rounded-[36px] p-5 md:p-6">
+        <p className="section-kicker">Wishlist</p>
+        <h1 className="section-title mt-4 text-slate-900">Saved products stay inside the same soft card language.</h1>
 
-      {wishList.length === 0 ? (
-        <div className="flex flex-col justify-center items-center text-gray-700 mt-20">
-          <p className="text-lg mb-3">Your wishlist is empty</p>
-          <button
-            onClick={() => navigate("/products")}
-            className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition"
-          >
-            Browse Products
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-4 max-w-4xl mx-auto">
-          {wishList.map((item) => (
-            <div
-              key={item.productId || item.id}
-              className="flex items-center justify-between bg-white rounded-xl shadow-md px-5 py-4 hover:shadow-lg transition-shadow"
-            >
-              <div className="flex items-center gap-4">
-                <img
-                  src={item.imageUrl ? (item.imageUrl.startsWith('http') ? item.imageUrl : `${IMAGE_BASE_URL}${item.imageUrl}`) : "/placeholder.png"}
-                  alt={item.name}
-                  className="w-20 h-20 object-cover rounded-lg border border-amber-100"
-                />
-                <div>
-                  <h2 className="font-semibold text-lg text-gray-800">{item.name}</h2>
-                  <p className="text-emerald-600 font-bold text-lg">₹{item.price}</p>
-                  <p className="text-sm text-gray-500">{item.category}</p>
+        {wishList.length === 0 ? (
+          <div className="mt-10 rounded-[28px] bg-white/72 px-6 py-14 text-center">
+            <p className="text-slate-500">Your wishlist is empty.</p>
+            <button onClick={() => navigate("/products")} className="primary-cta mt-5 px-5 py-3 text-sm">
+              Browse products
+            </button>
+          </div>
+        ) : (
+          <div className="mt-8 grid gap-4">
+            {wishList.map((item) => (
+              <div key={item.productId || item.id} className="rounded-[28px] bg-white/72 p-4 md:p-5">
+                <div className="grid gap-4 md:grid-cols-[120px_1fr_auto] md:items-center">
+                  <img src={getImageUrl(item.imageUrl)} alt={item.name} className="image-bleed h-28 w-full rounded-[22px] md:w-28" />
+                  <div>
+                    <p className="card-metadata">{item.category || "Saved product"}</p>
+                    <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-900">{item.name}</h2>
+                    <p className="mt-2 text-lg font-semibold text-slate-900">Rs {item.price}</p>
+                  </div>
+                  <div className="flex gap-2 md:flex-col">
+                    <button onClick={() => addToCart({ ...item, id: item.productId || item.id })} className="primary-cta px-4 py-3 text-sm">
+                      Add to cart
+                    </button>
+                    <button onClick={() => removeFromWishlist(item.productId)} className="ghost-cta px-4 py-3 text-sm">
+                      Remove
+                    </button>
+                  </div>
                 </div>
               </div>
-
-              <div className="flex flex-col sm:flex-row gap-2">
-                <button
-                  onClick={() => {
-                    addToCart({ ...item, id: item.productId || item.id });
-                  }}
-                  className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition"
-                >
-                  Add to Cart
-                </button>
-                <button
-                  onClick={() => removeFromWishlist(item.productId)}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 };
 

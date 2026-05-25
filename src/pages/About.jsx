@@ -1,43 +1,46 @@
-import React from 'react';
-import { FaRunning, FaDumbbell, FaAppleAlt } from 'react-icons/fa';
+import React from "react";
+import { FaAppleAlt, FaDumbbell, FaRunning } from "react-icons/fa";
+
+const items = [
+  {
+    icon: <FaRunning />,
+    title: "Track progress",
+    copy: "Monitor routines and performance changes inside a cleaner sports lifestyle environment.",
+  },
+  {
+    icon: <FaDumbbell />,
+    title: "Build plans",
+    copy: "Support training, conditioning, and recovery with calmer high-end sports commerce patterns.",
+  },
+  {
+    icon: <FaAppleAlt />,
+    title: "Fuel better",
+    copy: "Connect supplements and supporting products to the same premium visual system.",
+  },
+];
 
 const About = () => {
   return (
-    <div className="min-h-scree flex flex-col items-center px-15 py-16">
+    <section className="px-3 py-8 md:px-6 md:py-12">
+      <div className="section-shell premium-card rounded-[36px] p-6 md:p-8">
+        <p className="section-kicker">About FitN</p>
+        <h1 className="display-title mt-5 text-slate-900">Built for performance-focused shoppers.</h1>
+        <p className="body-copy mt-6 max-w-3xl">
+          FitN is shifting toward a reusable sports commerce language with premium card architecture,
+          editorial spacing, and softer product presentation inspired by Apple Card level restraint.
+        </p>
 
-      <h1 className="text-5xl md:text-6xl font-extrabold text-blue-900 mb-6 text-center ">
-        Welcome to FitN
-      </h1>
-      <p className="text-lg md:text-xl text-gray-700 max-w-3xl text-center mb-12">
-        FitN is your ultimate fitness companion. Our mission is to help you stay healthy, motivated, and consistent with your fitness goals. Whether you’re a beginner or a fitness enthusiast, we provide tools and guidance to make your journey enjoyable and effective.
-      </p>
-
-
-      <div className="grid md:grid-cols-3 gap-8 text-center w-full max-w-5xl">
-        <div className="bg-white p-8 rounded-xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer">
-          <FaRunning className="mx-auto text-blue-500 text-6xl mb-4 animate-pulse" />
-          <h2 className="text-2xl font-bold mb-2 text-gray-800">Track Progress</h2>
-          <p className="text-gray-600">Monitor your workouts and visualize your improvement over time.</p>
-        </div>
-
-        <div className="bg-white p-8 rounded-xl shadow-lg transform transition duration-500 hover:scale-105 hover:shadow-2xl cursor-pointer">
-          <FaDumbbell className="mx-auto text-green-500 text-6xl mb-4 " />
-          <h2 className="text-2xl font-bold mb-2 text-gray-800">Personalized Plans</h2>
-          <p className="text-gray-600">Receive workout plans tailored to your goals and fitness level.</p>
-        </div>
-
-        <div className="bg-white p-8 rounded-xl shadow-lg transform transition duration-1000 hover:scale-105 hover:shadow-2xl cursor-pointer">
-          <FaAppleAlt className="mx-auto text-red-400 text-6xl mb-4 animate-pulse/30" />
-          <h2 className="text-2xl font-bold mb-2 text-gray-800">Nutrition Tips</h2>
-          <p className="text-gray-600">Get expert guidance on meals and nutrition for optimal results.</p>
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {items.map((item) => (
+            <article key={item.title} className="rounded-[30px] bg-white/72 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
+              <div className="soft-pill inline-flex p-3 text-slate-700">{item.icon}</div>
+              <h2 className="mt-5 text-2xl font-semibold tracking-[-0.04em] text-slate-900">{item.title}</h2>
+              <p className="mt-4 text-sm leading-7 text-slate-500">{item.copy}</p>
+            </article>
+          ))}
         </div>
       </div>
-
-
-      <p className="mt-16 text-gray-500 text-sm text-center">
-        Join thousands of others on their fitness journey with FitN and experience the difference!
-      </p>
-    </div>
+    </section>
   );
 };
 

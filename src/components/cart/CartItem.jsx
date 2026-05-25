@@ -1,119 +1,81 @@
 import React, { useContext } from "react";
-import { CartContext } from "../../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { CartContext } from "../../contexts/CartContext";
 import { IMAGE_BASE_URL } from "../../services/api";
+
+const getImageUrl = (value) => {
+  if (!value) return "https://via.placeholder.com/100";
+  return value.startsWith("http") ? value.replace(":7071", ":5252") : `${IMAGE_BASE_URL}${value}`;
+};
 
 const CartItem = () => {
   const { cart, removeFromCart, increaseQty, decreaseQty } = useContext(CartContext);
   const navigate = useNavigate();
 
-  if (!cart || cart.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-screen text-lg text-gray-600">
-        Your cart is empty
-      </div>
-    );
-  }
+  if (!cart || cart.length === 0) return <div className="py-20 text-center text-slate-500">Your cart is empty.</div>;
 
-  const calculateDiscountedPrice = (price, discount) => {
-    if (!discount || discount <= 0) return price;
-    return price - (price * discount) / 100;
-  };
-
-  const totalPrice = cart.reduce(
-    (acc, item) => {
-      const price = calculateDiscountedPrice(item.productPrice || 0, item.discount || 0);
-      return acc + price * (item.quantity || 1);
-    }, 0
-  );
+  const discountedPrice = (price, discount) => (!discount || discount <= 0 ? price : price - (price * discount) / 100);
+  const totalPrice = cart.reduce((acc, item) => acc + discountedPrice(item.productPrice || 0, item.discount || 0) * (item.quantity || 1), 0);
 
   return (
-    <div className="min-h-screen p-6">
-      <h1 className="text-3xl font-bold mb-6 text-emerald-700">Your Cart</h1>
+    <section className="px-3 py-8 md:px-6 md:py-12">
+      <div className="section-shell grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="premium-card rounded-[36px] p-5 md:p-6">
+          <p className="section-kicker">Cart review</p>
+          <h1 className="section-title mt-4 text-slate-900">A softer, clearer summary of selected items.</h1>
 
-      <div className="space-y-6">
-        {cart.map((item) => {
-          const discountedPrice = calculateDiscountedPrice(item.productPrice || 0, item.discount || 0);
-          const hasDiscount = item.discount > 0;
-
-          return (
-            <div
-              key={item.productId}
-              className="flex items-center justify-between border-b pb-4"
-            >
-              <div className="flex items-center gap-4">
-                <img
-                  src={item.productImageUrl ? (item.productImageUrl.startsWith('http') ? item.productImageUrl.replace(':7071', ':5252') : `${IMAGE_BASE_URL}${item.productImageUrl}`) : "https://via.placeholder.com/100"}
-                  alt={item.productName}
-                  className="w-20 h-20 object-cover rounded-lg"
-                />
-                <div>
-                  <h2 className="text-lg font-semibold">{item.productName}</h2>
-                  <div className="flex items-center gap-2">
-                    {hasDiscount ? (
-                      <>
-                        <p className="text-emerald-600 font-bold">₹{discountedPrice.toLocaleString("en-IN")}</p>
-                        <p className="text-gray-400 text-sm line-through decoration-rose-500/50">₹{item.productPrice}</p>
-                        <span className="bg-rose-50 text-rose-600 text-[10px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">-{item.discount}%</span>
-                      </>
-                    ) : (
-                      <p className="text-gray-500 text-sm font-medium">₹{item.productPrice}</p>
-                    )}
+          <div className="mt-8 grid gap-4">
+            {cart.map((item) => {
+              const finalPrice = discountedPrice(item.productPrice || 0, item.discount || 0);
+              return (
+                <article key={item.productId} className="rounded-[28px] bg-white/72 p-4 md:p-5">
+                  <div className="grid gap-4 md:grid-cols-[120px_1fr_auto] md:items-center">
+                    <img src={getImageUrl(item.productImageUrl)} alt={item.productName} className="image-bleed h-28 w-full rounded-[22px] md:w-28" />
+                    <div>
+                      <h2 className="text-2xl font-semibold tracking-[-0.04em] text-slate-900">{item.productName}</h2>
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                        <p className="text-lg font-semibold text-slate-900">Rs {finalPrice.toLocaleString("en-IN")}</p>
+                        {item.discount > 0 && <span className="rounded-full bg-[#ffefe3] px-3 py-1 text-xs font-semibold text-[#ff8d49]">-{item.discount}%</span>}
+                      </div>
+                      <div className="mt-4 flex items-center gap-2">
+                        <button onClick={() => decreaseQty(item.productId)} className="soft-pill px-3 py-2 text-slate-700">-</button>
+                        <span className="min-w-8 text-center font-semibold text-slate-900">{item.quantity}</span>
+                        <button onClick={() => increaseQty(item.productId)} className="soft-pill px-3 py-2 text-slate-700">+</button>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 md:flex-col md:items-end">
+                      <p className="text-lg font-semibold text-slate-900">Rs {(finalPrice * (item.quantity || 1)).toLocaleString("en-IN")}</p>
+                      <button onClick={() => removeFromCart(item.productId)} className="text-sm text-slate-500">Remove</button>
+                    </div>
                   </div>
-
-                  <div className="flex items-center gap-2 mt-2">
-                    <button
-                      onClick={() => decreaseQty(item.productId)}
-                      className="bg-gray-100 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-200 transition-colors font-bold text-slate-600"
-                    >
-                      -
-                    </button>
-                    <span className="w-8 text-center font-bold text-slate-800">{item.quantity}</span>
-                    <button
-                      onClick={() => increaseQty(item.productId)}
-                      className="bg-gray-100 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-200 transition-colors font-bold text-slate-600"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col items-end">
-                <p className="font-black text-slate-900 text-lg">
-                  ₹{(discountedPrice * (item.quantity || 1)).toLocaleString("en-IN")}
-                </p>
-                <button
-                  onClick={() => removeFromCart(item.productId)}
-                  className="text-rose-500 hover:text-rose-700 mt-2 text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-1"
-                >
-                  Remove
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-12 bg-slate-50 rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-center gap-6">
-        <div>
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Estimated Total</p>
-          <h2 className="text-4xl font-black text-slate-900">
-            ₹{totalPrice.toLocaleString("en-IN")}
-          </h2>
-        </div>
-        <button
-          onClick={() => { toast.success("Proceeding to checkout"); navigate("/checkout"); }}
-          className="bg-slate-900 text-white px-10 py-5 rounded-2xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 font-black uppercase tracking-widest text-sm flex items-center gap-3 group"
-        >
-          <span>Proceed to Checkout</span>
-          <div className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform">
-            →
+                </article>
+              );
+            })}
           </div>
-        </button>
+        </div>
+
+        <aside className="premium-card rounded-[36px] p-5 md:p-6">
+          <p className="section-kicker">Summary</p>
+          <h2 className="section-title mt-4 text-slate-900">Order total</h2>
+          <div className="mt-8 rounded-[28px] bg-white/72 p-5">
+            <p className="card-metadata">Estimated total</p>
+            <p className="mt-3 text-4xl font-semibold tracking-[-0.06em] text-slate-900">
+              Rs {totalPrice.toLocaleString("en-IN")}
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              toast.success("Proceeding to checkout");
+              navigate("/checkout");
+            }}
+            className="primary-cta mt-6 w-full px-5 py-4 text-sm"
+          >
+            Proceed to checkout
+          </button>
+        </aside>
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -17,6 +17,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Profile from "./pages/profile";
 import Wishlist from "./components/products/Wishlist";
+import Supplements from "./pages/Supplements";
 
 import { AdminAuthProvider, useAdminAuth } from "./admin/context/AdminAuthContext";
 import AdminLayout from "./admin/Layout/adminLayout";
@@ -47,15 +48,24 @@ const router = createHashRouter([
       { path: "/login", element: <LoginForm /> },
       { path: "/signup", element: <SignUp /> },
       { path: "/products/:id", element: <ProductDetails /> },
-      { path: "/Categories", element: <Categories /> },
+      { path: "/categories", element: <Categories /> },
+      { path: "/Categories", element: <Navigate to="/categories" replace /> },
       { path: "/cart", element: <CartItem /> },
       { path: "/maincart", element: <Cart /> },
-      { path: "/Checkout", element: <Checkout /> },
-      { path: "/Search", element: <Search /> },
-      { path: "/About", element: <About /> },
-      { path: "/Contact", element: <Contact /> },
-      { path: "/Profile", element: <Profile /> },
-      { path: "/Wishlist", element: <Wishlist /> },
+      { path: "/checkout", element: <Checkout /> },
+      { path: "/Checkout", element: <Navigate to="/checkout" replace /> },
+      { path: "/search", element: <Search /> },
+      { path: "/Search", element: <Navigate to="/search" replace /> },
+      { path: "/supplements", element: <Supplements /> },
+      { path: "/Supplements", element: <Navigate to="/supplements" replace /> },
+      { path: "/about", element: <About /> },
+      { path: "/About", element: <Navigate to="/about" replace /> },
+      { path: "/contact", element: <Contact /> },
+      { path: "/Contact", element: <Navigate to="/contact" replace /> },
+      { path: "/profile", element: <Profile /> },
+      { path: "/Profile", element: <Navigate to="/profile" replace /> },
+      { path: "/wishlist", element: <Wishlist /> },
+      { path: "/Wishlist", element: <Navigate to="/wishlist" replace /> },
       {
         path: "/admin",
         element: (

@@ -156,4 +156,14 @@ export const confirmPayment = async (paymentData) => {
   return response.data;
 };
 
+export const chatWithAi = async ({ message, conversationId, pageContext }) => {
+  return handleRequest(
+    api.post("ai/chat", {
+      message,
+      conversationId,
+      pageContext,
+    })
+  );
+};
+
 export default api;
