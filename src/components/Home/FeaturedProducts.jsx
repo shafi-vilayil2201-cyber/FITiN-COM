@@ -22,12 +22,12 @@ const FeaturedProducts = ({ products = [], loading }) => {
         <div className="mb-7 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="section-kicker">Trending now</p>
-            <h2 className="section-title mt-4 text-slate-900">Dynamic product cards with quieter luxury.</h2>
+            <h2 className="section-title mt-4 text-slate-900">Discover Our Best Sellers</h2>
             <p className="body-copy mt-4 max-w-2xl">
-              Cards support dynamic titles, pricing, discounts, badges, and actions without breaking the layout.
+              Curated high-performance gear designed to elevate your everyday routines and athletic performance.
             </p>
           </div>
-          <div className="soft-pill px-4 py-2 text-sm font-medium text-slate-600">Designed for API variability</div>
+          <div className="soft-pill px-4 py-2 text-sm font-medium text-slate-600">New Arrivals</div>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -64,8 +64,8 @@ const FeaturedProducts = ({ products = [], loading }) => {
                   <h3 className="mt-2 text-2xl font-semibold tracking-[-0.045em] text-slate-900">
                     {product.name}
                   </h3>
-                  <p className="mt-3 text-sm leading-6 text-slate-500">
-                    Backend-driven content flows into a more editorial card structure with stronger spacing and softer emphasis.
+                  <p className="mt-3 text-sm leading-6 text-slate-500 line-clamp-2">
+                    {product.shortDescription || product.description || "Premium high-performance athletic gear designed for comfort and durability."}
                   </p>
 
                   <div className="mt-5 flex items-end justify-between gap-3">

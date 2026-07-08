@@ -26,8 +26,7 @@ const About = () => {
         <p className="section-kicker">About FitN</p>
         <h1 className="display-title mt-5 text-slate-900">Built for performance-focused shoppers.</h1>
         <p className="body-copy mt-6 max-w-3xl">
-          FitN is shifting toward a reusable sports commerce language with premium card architecture,
-          editorial spacing, and softer product presentation inspired by Apple Card level restraint.
+          FitN is your ultimate sports performance and nutrition companion. We curate the highest-quality athletic gear, training equipment, and scientifically backed supplements to power your fitness journey and fuel your progress.
         </p>
 
         <div className="mt-10 grid gap-5 md:grid-cols-3">

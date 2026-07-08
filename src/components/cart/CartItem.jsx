@@ -23,7 +23,7 @@ const CartItem = () => {
       <div className="section-shell grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="premium-card rounded-[36px] p-5 md:p-6">
           <p className="section-kicker">Cart review</p>
-          <h1 className="section-title mt-4 text-slate-900">A softer, clearer summary of selected items.</h1>
+          <h1 className="section-title mt-4 text-slate-900">Your Selected Items</h1>
 
           <div className="mt-8 grid gap-4">
             {cart.map((item) => {

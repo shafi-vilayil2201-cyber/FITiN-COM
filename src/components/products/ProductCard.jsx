@@ -43,7 +43,7 @@ const ProductCard = () => {
         <div className="mb-6 flex items-end justify-between">
           <div>
             <p className="section-kicker">Inventory</p>
-            <h2 className="section-title mt-4 text-slate-900">A reusable product grid, not a marketplace wall.</h2>
+            <h2 className="section-title mt-4 text-slate-900">Explore Our Premium Gear</h2>
           </div>
         </div>
 

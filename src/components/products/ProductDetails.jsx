@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getAllProducts, IMAGE_BASE_URL } from "../../services/api.js";
+import { getProductById, getSupplementById, IMAGE_BASE_URL } from "../../services/api.js";
 import { CartContext } from "../../contexts/CartContext.jsx";
 import { WishlistContext } from "../../contexts/wishListContext.jsx";
 
@@ -9,7 +9,7 @@ const getImageUrl = (value) => {
   return value.startsWith("http") ? value.replace(":7071", ":5252") : `${IMAGE_BASE_URL}${value}`;
 };
 
-const ProductDetails = () => {
+const ProductDetails = ({ isSupplement = false }) => {
   const { id } = useParams();
   const [details, setDetails] = useState(null);
   const [pending, setPending] = useState(true);
@@ -21,8 +21,8 @@ const ProductDetails = () => {
     const fetchProduct = async () => {
       setPending(true);
       try {
-        const data = await getAllProducts();
-        setDetails((data ?? []).find((item) => String(item.id) === id));
+        const data = isSupplement ? await getSupplementById(id) : await getProductById(id);
+        setDetails(data);
       } catch (error) {
         console.error("Error fetching product details:", error);
       } finally {
@@ -30,7 +30,7 @@ const ProductDetails = () => {
       }
     };
     fetchProduct();
-  }, [id]);
+  }, [id, isSupplement]);
 
   if (pending) return <div className="py-20 text-center text-slate-500">Loading product details...</div>;
   if (!details) return <div className="py-20 text-center text-slate-500">Product not found.</div>;
@@ -69,7 +69,7 @@ const ProductDetails = () => {
             </div>
 
             <p className="body-copy mt-6">
-              {details.description || details.shortDescription || "Premium presentation for a backend-driven product detail page."}
+              {details.description || details.shortDescription || "No product description available."}
             </p>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-3">

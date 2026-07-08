@@ -9,7 +9,7 @@ const Contact = () => {
           <p className="section-kicker">Contact</p>
           <h1 className="display-title mt-5 text-slate-900">Get in touch with the FitN team.</h1>
           <p className="body-copy mt-5">
-            Support, feedback, and partnership contact points should feel as intentional as the rest of the storefront.
+            Our dedicated customer experience team is here to assist with product queries, order tracking, and custom recommendations.
           </p>
 
           <div className="mt-8 grid gap-4">

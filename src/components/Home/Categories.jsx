@@ -36,10 +36,9 @@ const Categories = ({
       <div className="section-shell">
         <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="section-kicker">Featured categories</p>
-            <h2 className="section-title mt-4 text-slate-900">Structured, touchable category browsing.</h2>
+            <h2 className="section-title mt-4 text-slate-900">Featured Categories</h2>
             <p className="body-copy mt-4 max-w-2xl">
-              Categories become large destination cards with supporting previews instead of small marketplace filters.
+              Discover curated equipment, apparel, and nutrition arranged for structured and easy browsing.
             </p>
           </div>
           <button onClick={() => navigate("/products")} className="ghost-cta self-start px-5 py-3 text-sm">

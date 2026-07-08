@@ -31,8 +31,8 @@ const benefitItems = [
     icon: <FaFlask size={14} />,
   },
   {
-    title: "Ready for backend later",
-    copy: "The section can move on dummy content now and connect to live supplement APIs when they are ready.",
+    title: "Science-Backed",
+    copy: "Every formula is third-party lab tested for purity, heavy metals, and absolute label accuracy.",
     icon: <FaShieldAlt size={14} />,
   },
 ];
@@ -44,7 +44,7 @@ const StoriesSection = () => {
         <div className="premium-card rounded-[36px] p-6 md:p-8">
           <p className="section-kicker">Social proof</p>
           <h2 className="section-title mt-4 text-slate-900">
-            Trust cues stay here, now paired with a supplements entry point instead of being removed.
+            Real Coaching, Real Performance.
           </h2>
           <div className="mt-8 grid gap-4">
             {stories.map((story) => (
@@ -91,7 +91,7 @@ const StoriesSection = () => {
               </Link>
               <div className="soft-pill inline-flex items-center gap-2 px-4 py-3 text-sm text-slate-700">
                 <FaCapsules size={13} />
-                Dummy items ready
+                Certified Purity
               </div>
             </div>
 

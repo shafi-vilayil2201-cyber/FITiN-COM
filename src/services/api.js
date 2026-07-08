@@ -72,13 +72,30 @@ export const logoutUser = () => handleRequest(api.post("auth/logout"));
 
 export const getAllProducts = async () => handleRequest(api.get("products"));
 
+export const getAllSupplements = async () => handleRequest(api.get("supplements"));
+
+export const getSupplementById = async (id) => {
+  if (id === undefined || id === null) {
+    throw new Error("getSupplementById: id is required");
+  }
+  return handleRequest(api.get(`supplements/${encodeURIComponent(id)}`));
+};
+
 export const adminGetProducts = async () => handleRequest(api.get("admin/products"));
+
+export const adminGetSupplements = async () => handleRequest(api.get("admin/supplements"));
 
 export const adminCreateProduct = async (formData) => handleRequest(api.post("admin/products", formData));
 
+export const adminCreateSupplement = async (formData) => handleRequest(api.post("admin/supplements", formData));
+
 export const adminUpdateProduct = async (id, formData) => handleRequest(api.put(`admin/products/${encodeURIComponent(id)}`, formData));
 
+export const adminUpdateSupplement = async (id, formData) => handleRequest(api.put(`admin/supplements/${encodeURIComponent(id)}`, formData));
+
 export const adminDeleteProduct = async (id) => handleRequest(api.delete(`admin/products/${encodeURIComponent(id)}`));
+
+export const adminDeleteSupplement = async (id) => handleRequest(api.delete(`admin/supplements/${encodeURIComponent(id)}`));
 
 export const getAllCategories = async () => handleRequest(api.get("categories"));
 

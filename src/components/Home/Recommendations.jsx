@@ -18,16 +18,15 @@ const Recommendations = ({ products = [], loading }) => {
       <div className="section-shell grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="premium-card rounded-[34px] p-6 md:p-8">
           <p className="section-kicker">Recommendations</p>
-          <h2 className="section-title mt-4 text-slate-900">Personalized blocks, calmer spacing, stronger hierarchy.</h2>
+          <h2 className="section-title mt-4 text-slate-900">Curated For Your Routine</h2>
           <p className="body-copy mt-5">
-            Recommendations should feel like curated advice, not a crowded feed. These cards stay soft, roomy,
-            and adaptable to changing product names, prices, and badge states.
+            Discover high-performance apparel, gear, and nutritional support hand-picked by our performance coaching team.
           </p>
           <div className="mt-8 grid gap-3">
             {[
-              "Reusable card primitives",
-              "Low-contrast elevated surfaces",
-              "Dynamic content-safe layouts",
+              "Premium Quality Standards",
+              "Expert-Approved Formulas",
+              "Engineered for Peak Output",
             ].map((item) => (
               <div key={item} className="soft-pill px-4 py-3 text-sm font-medium text-slate-700">
                 {item}

@@ -139,7 +139,7 @@ const PaymentForm = () => {
           {checkoutStep === 1 ? (
             <div className="mt-8">
               <p className="section-kicker">Shipping details</p>
-              <h1 className="section-title mt-4 text-slate-900">Soft forms, structured checkout.</h1>
+              <h1 className="section-title mt-4 text-slate-900">Enter Your Shipping Details</h1>
               <div className="mt-6 grid gap-4">
                 <input placeholder="Full name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className={fieldClassName} />
                 <textarea placeholder="Address" rows={4} value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} className={`${fieldClassName} min-h-[9rem] resize-none`} />

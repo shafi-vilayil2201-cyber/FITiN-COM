@@ -24,6 +24,7 @@ import AdminLayout from "./admin/Layout/adminLayout";
 import Dashboard from "./admin/dashboard/dashboard";
 import Orders from "./admin/orders/orders";
 import ProductsAdmin from "./admin/products/products";
+import SupplementsAdmin from "./admin/supplements/supplements";
 import Users from "./admin/users/users";
 import AdminCategories from "./admin/categories/categories";
 
@@ -48,6 +49,8 @@ const router = createHashRouter([
       { path: "/login", element: <LoginForm /> },
       { path: "/signup", element: <SignUp /> },
       { path: "/products/:id", element: <ProductDetails /> },
+      { path: "/supplements/:id", element: <ProductDetails isSupplement={true} /> },
+      { path: "/Supplements/:id", element: <Navigate to="/supplements/:id" replace /> },
       { path: "/categories", element: <Categories /> },
       { path: "/Categories", element: <Navigate to="/categories" replace /> },
       { path: "/cart", element: <CartItem /> },
@@ -78,6 +81,7 @@ const router = createHashRouter([
           { path: "dashboard", element: <Dashboard /> },
           { path: "orders", element: <Orders /> },
           { path: "products", element: <ProductsAdmin /> },
+          { path: "supplements", element: <SupplementsAdmin /> },
           { path: "categories", element: <AdminCategories /> },
           { path: "users", element: <Users /> }
         ]

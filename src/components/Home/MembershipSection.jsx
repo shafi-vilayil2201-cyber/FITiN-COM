@@ -4,14 +4,14 @@ const plans = [
   {
     badge: "Member favorite",
     title: "Starter Access",
-    copy: "Early access to featured drops, soft recommendations, and members-only pricing cues.",
+    copy: "Early access to limited drops, custom nutrition recommendations, and exclusive member pricing.",
     price: "Rs 499",
     accent: "from-[#dff2b8] to-[#f7f7f6]",
   },
   {
     badge: "Premium",
     title: "Pro Performance",
-    copy: "Priority campaigns, curated essentials, and a more personalized product journey.",
+    copy: "Priority custom workout guides, customized monthly supplement boxes, and 1-on-1 performance consulting.",
     price: "Rs 1499",
     accent: "from-[#dde7ff] to-[#f7f7f6]",
   },
@@ -24,7 +24,7 @@ const MembershipSection = () => {
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="section-kicker">Membership</p>
-            <h2 className="section-title mt-4 text-slate-900">Subscription offers should feel like premium services.</h2>
+            <h2 className="section-title mt-4 text-slate-900">Unlock Exclusive Athlete Benefits</h2>
           </div>
           <button className="accent-cta self-start px-5 py-3 text-sm">See membership options</button>
         </div>
